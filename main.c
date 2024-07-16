@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include "myalloc.h"
 
-int TOTAL_MEMORY_SIZE = 100;
+int TOTAL_MEMORY_SIZE = 900;
 int EACH_MEMORY_SIZE = sizeof(int);
 
 int main(int argc, char* argv[]) {
     initialize_allocator(TOTAL_MEMORY_SIZE, FIRST_FIT);
     // initialize_allocator(100, BEST_FIT);
     // initialize_allocator(100, WORST_FIT);
-    printf("Using first fit algorithm on memory size 100\n");
+    printf("Using first fit algorithm on memory size %d \n", TOTAL_MEMORY_SIZE);
 
     int* p[50] = {NULL};
     for(int i=0; i<10; ++i) {

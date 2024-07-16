@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "myalloc.h"
+#include "list.h"
 
 // each linked list should contain 
 // 1. a pointer to the allocated memory block
@@ -13,22 +14,16 @@ struct Header {
 };
 
 struct Block {
-    struct Header *header;
-    size_t size;
-};
-
-struct List_Block {
-    // size_t size;
-    struct List_Block* curr;
-    struct List_Block* next;
+    struct Header header;
+    struct Block* next;
 };
 
 struct Myalloc {
     enum allocation_algorithm aalgorithm;
-    int size;
+    size_t size;
     void* memory;
-    struct List_Block *freeList;
-    struct List_Block *allocatedList;
+    struct Block* freeList;
+    struct Block* allocatedList;
 };
 
 struct Myalloc myalloc;
@@ -39,114 +34,69 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
 
     // size should align to the nearest next 64-byte boundary (round up)
     myalloc.size = (_size + 63) & ~63;
-    myalloc.memory = malloc((size_t)myalloc.size);
+    myalloc.memory = malloc(myalloc.size);
 
     assert(myalloc.memory != NULL);
     memset(myalloc.memory, 0, myalloc.size);
 
     // initialize free block
-    myalloc.freeList = (struct List_Block*)myalloc.memory;
-    myalloc.freeList->size = myalloc.size;
+    myalloc.freeList = (struct Block*) myalloc.memory;
+    myalloc.freeList->header.size = myalloc.size;
     myalloc.freeList->next = NULL;
     myalloc.allocatedList = NULL;
 }
 
 void destroy_allocator() {
-    myalloc.memory = NULL;
-    myalloc.freeList = NULL;
-    myalloc.allocatedList = NULL;
     free(myalloc.memory);
-
-    // free other dynamic allocated memory to avoid memory leak
+    myalloc.memory = NULL;
+    // Free all nodes in freeList and allocatedList
+    // Assuming List_deleteNode manages freeing nodes
+    while (myalloc.freeList) {
+        List_deleteNode((struct Block**)&myalloc.freeList, myalloc.freeList);
+    }
+    while (myalloc.allocatedList) {
+        List_deleteNode((struct Block**)&myalloc.allocatedList, myalloc.allocatedList);
+    }
 }
 
 void* allocate(int _size) {
-    // int total_size = (_size + sizeof(int) + 63) & ~63;
-    int total_size = _size + sizeof(struct Header); // Header: 8 bytes from size_t
-    struct Block** best_fit_block = NULL;
+    int total_size = _size + sizeof(struct Header);
     struct Block** current_block = &myalloc.freeList;
+    struct Block* best_fit = NULL;
+    struct Block** best_fit_prev = NULL;
 
-    if (myalloc.aalgorithm == FIRST_FIT) {
-        while (*current_block != NULL){
-            if ((*current_block)->size >= total_size) {
-                best_fit_block = current_block;
-                break;
+    while (*current_block) {
+        if ((*current_block)->header.size >= total_size) {
+            if (myalloc.aalgorithm == FIRST_FIT || !best_fit || (*current_block)->header.size < best_fit->header.size) {
+                best_fit = *current_block;
+                best_fit_prev = current_block;
+                if (myalloc.aalgorithm == FIRST_FIT) break;
             }
-            current_block = &((*current_block).header->next);
         }
-    }
-    else if (myalloc.aalgorithm == BEST_FIT) {
-        while (*current_block != NULL){
-            if (best_fit_block == NULL || (*current_block)->size < (*best_fit_block)->size) {
-                best_fit_block = current_block;
-            }
-            current_block = &((*current_block).header->next);
-        }
-    } 
-
-    if (best_fit_block == NULL) {
-        return NULL;
+        current_block = &(*current_block)->next;
     }
 
-    struct Block* tmp_block = *best_fit_block;
-    if (tmp_block->size > total_size + sizeof(struct Block)) {
-        printf("block size (%zu) is bigger than total_size %lu \n", tmp_block->size, total_size + sizeof(struct Block));
-        struct Block* new_block = (struct Block*)((char*)tmp_block + total_size);
-        new_block->size = tmp_block->size - total_size;
-        new_block.header->next = tmp_block.header->next;
-        tmp_block.header->next = new_block;
-        tmp_block->size = total_size;
-    }
-    else {
-        printf("block size (%zu) is smaller than total_size %lu \n", tmp_block->size, total_size + sizeof(struct Block));
+    if (!best_fit) return NULL;
+
+    if (best_fit->header.size > total_size + sizeof(struct Block)) {
+        struct Block* new_block = (struct Block*)((char*)best_fit + total_size);
+        new_block->header.size = best_fit->header.size - total_size;
+        new_block->next = best_fit->next;
+        *best_fit_prev = new_block;  // Update the free list
+    } else {
+        *best_fit_prev = best_fit->next;  // Use the whole block
     }
 
-    *best_fit_block = tmp_block.header->next;
-    tmp_block.header->next = myalloc.allocatedList;
-    myalloc.allocatedList = tmp_block;
-
-    return (void*)((char*)tmp_block + sizeof(int));
-
-
-    // void* ptr = NULL;
-
-    // Allocate memory from myalloc.memory 
-    // ptr = address of allocated memory
-
-    // return ptr;
+    List_insertHead((struct Block**)&myalloc.allocatedList, best_fit);
+    return (void*)((char*)best_fit + sizeof(struct Header));
 }
 
 void deallocate(void* _ptr) {
     assert(_ptr != NULL);
-
-    // Free allocated memory
-    // Note: _ptr points to the user-visible memory. The size information is
-    // stored at (char*)_ptr - 8.
-
-    struct Block* block = (struct Block*)((char*)_ptr - sizeof(int));
-    struct Block** current_block = &myalloc.allocatedList;
-
-    while (*current_block != NULL) {
-        if (*current_block == block) {
-            *current_block = block.header->next;
-            break;
-        }
-        current_block = &((*current_block).header->next);
-    }
-
-    block.header->next = myalloc.freeList;
-    myalloc.freeList = block;
-
-    // Combine contiguous free blocks
-    struct Block* current = myalloc.freeList;
-    while (current != NULL && current.header->next != NULL) {
-        if ((char*)current + current->size == (char*)current.header->next) {
-            current->size += current.header->next->size;
-            current.header->next = current.header->next->next;
-        } else {
-            current = current.header->next;
-        }
-    }
+    struct Block* block = (struct Block*)((char*)_ptr - sizeof(struct Header));
+    List_deleteNode((struct Block**)&myalloc.allocatedList, block);  // Remove from allocated list
+    List_insertHead((struct Block**)&myalloc.freeList, block);  // Insert back into free list
+    // Code to coalesce free blocks should be here if necessary
 }
 
 int compact_allocation(void** _before, void** _after) {
