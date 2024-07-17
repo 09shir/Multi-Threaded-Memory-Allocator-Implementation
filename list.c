@@ -3,28 +3,70 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct nodeStruct* List_createNode(const char *item){
+struct Block* List_createBlock(void *item) {
 
-    struct nodeStruct* newNode = malloc(sizeof(struct nodeStruct));
-    if (newNode == NULL) {
-        return NULL;
-    }
-
-    newNode->next = NULL;
-
-    if (item){
-        strncpy(newNode->item, item, MAX_ITEM_SIZE);
-        newNode->item[MAX_ITEM_SIZE - 1] = '\0';
-        newNode->item_size = strlen(newNode->item);
-    }
-    else{
-        newNode->item[0] = '\0';
-        newNode->item_size = 0;
-    }
-
-    return newNode;
+    struct Block* newBlock = malloc(sizeof(struct Block));
+    newBlock->size = item;
+    newBlock->next = NULL;
+    return newBlock;
 }
 
+// insert in ascending order
+void List_insertBlock(struct Block **headRef, struct Block *node) {
+    struct Block *current = *headRef;
+
+    if (current == NULL || node->size < current->size) {
+        node->next = current;
+        *headRef = node;
+    }
+
+    while (current->next->size < node->size && current->next != NULL) {
+        current = current->next;
+        node->next = current->next;
+        current->next = node;
+    }
+}
+
+struct Block* List_searchBlock(struct Block *headRef, struct Block *node) {
+    struct Block *current = headRef;
+
+    while (current) {
+        if (current->size == node->size){
+            return current;
+        }
+        current = current->next;
+    }
+
+    return NULL;
+}
+
+void List_deleteBlock(struct Block **headRef, struct Block *node) {
+    struct Block *current = *headRef;
+
+    // if deleting head
+    if (current == node){
+        *headRef = current->next ? current->next : NULL;
+    }
+    // other cases
+    else{
+        while(current->next){
+            if (current->next == node){
+                // if deleted node has more nodes connected
+                if (current->next->next){
+                    struct Block *tmp = current->next;
+                    current->next = tmp->next;
+                }
+                else{
+                    current->next = NULL;
+                }
+                return;
+            }
+            current = current->next;
+        }
+    }
+}
+
+// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 void List_insertHead (struct nodeStruct **headRef, struct nodeStruct *node){
 

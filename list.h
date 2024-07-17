@@ -5,11 +5,15 @@ struct nodeStruct {
     struct nodeStruct *next;
 };
 
-/*
- * Allocate memory for a node of type struct nodeStruct and initialize
- * it with the value item. Return a pointer to the new node.
-*/
-struct nodeStruct* List_createNode(const char *item);
+struct Block {
+    void* size;
+    struct Block* next;
+};
+
+struct Block* List_createBlock(void *item);
+void List_insertBlock(struct Block **headRef, struct Block *node);
+struct Block* List_searchBlock(struct Block *headRef, struct Block *node);
+void List_deleteBlock(struct Block **headRef, struct Block *node);
 
 /*
  * Insert node at the head of the list.

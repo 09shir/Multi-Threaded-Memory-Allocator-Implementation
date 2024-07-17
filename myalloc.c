@@ -9,14 +9,17 @@
 // 1. a pointer to the allocated memory block
 // 2. a pointer to the next node in the list
 
-struct Header {
-    size_t size;
-};
+// struct Header {
+//     size_t size;
+// };
 
-struct Block {
-    struct Header header;
-    struct Block* next;
-};
+#define HEADER_SIZE 8
+
+// struct Block {
+//     // struct Header header;
+//     void* size;
+//     struct Block* next;
+// };
 
 struct Myalloc {
     enum allocation_algorithm aalgorithm;
@@ -30,19 +33,21 @@ struct Myalloc myalloc;
 
 void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
     assert(_size > 0);
-    myalloc.aalgorithm = _aalgorithm;
 
     // size should align to the nearest next 64-byte boundary (round up)
     myalloc.size = (_size + 63) & ~63;
-    myalloc.memory = malloc(myalloc.size);
+    myalloc.memory = malloc((size_t)myalloc.size);
+    myalloc.aalgorithm = _aalgorithm;
 
-    assert(myalloc.memory != NULL);
     memset(myalloc.memory, 0, myalloc.size);
 
-    // initialize free block
-    myalloc.freeList = (struct Block*) myalloc.memory;
-    myalloc.freeList->header.size = myalloc.size;
-    myalloc.freeList->next = NULL;
+    struct Block *block = List_createBlock(myalloc.memory + HEADER_SIZE);
+    // struct Block *block = List_createBlock(myalloc.memory);
+    List_insertBlock(&myalloc.freeList, block);
+
+    // copy size into the header
+    size_t header_size = myalloc.size - HEADER_SIZE;
+    memcpy(myalloc.memory, &header_size, HEADER_SIZE);
     myalloc.allocatedList = NULL;
 }
 
@@ -51,51 +56,64 @@ void destroy_allocator() {
     myalloc.memory = NULL;
     // Free all nodes in freeList and allocatedList
     // Assuming List_deleteNode manages freeing nodes
-    while (myalloc.freeList) {
-        List_deleteNode((struct Block**)&myalloc.freeList, myalloc.freeList);
-    }
-    while (myalloc.allocatedList) {
-        List_deleteNode((struct Block**)&myalloc.allocatedList, myalloc.allocatedList);
-    }
+
 }
 
 void* allocate(int _size) {
-    int total_size = _size + sizeof(struct Header);
-    struct Block** current_block = &myalloc.freeList;
-    struct Block* best_fit = NULL;
-    struct Block** best_fit_prev = NULL;
+    void* ptr = NULL;
 
-    while (*current_block) {
-        if ((*current_block)->header.size >= total_size) {
-            if (myalloc.aalgorithm == FIRST_FIT || !best_fit || (*current_block)->header.size < best_fit->header.size) {
-                best_fit = *current_block;
-                best_fit_prev = current_block;
-                if (myalloc.aalgorithm == FIRST_FIT) break;
+    // Allocate memory from myalloc.memory 
+    // ptr = address of allocated memory
+
+    int total_size = _size + HEADER_SIZE;
+    struct Block *curr = myalloc.freeList;
+    struct Block *tmp = NULL;
+    struct Block *best_fit = NULL;
+
+    if (myalloc.aalgorithm == FIRST_FIT) {
+        while (curr) {
+            if (*(size_t *)curr->size > total_size) {
+                best_fit = curr;
+                break;
             }
+            curr = curr->next;
         }
-        current_block = &(*current_block)->next;
+    }
+    else if (myalloc.aalgorithm == BEST_FIT) {
+        while (curr) {
+            // TO DO
+            curr = curr->next;
+            tmp = tmp->next;
+        }
     }
 
-    if (!best_fit) return NULL;
-
-    if (best_fit->header.size > total_size + sizeof(struct Block)) {
-        struct Block* new_block = (struct Block*)((char*)best_fit + total_size);
-        new_block->header.size = best_fit->header.size - total_size;
-        new_block->next = best_fit->next;
-        *best_fit_prev = new_block;  // Update the free list
-    } else {
-        *best_fit_prev = best_fit->next;  // Use the whole block
+    // a new header will only be added if (free size (header not included) > requested size + HEADER_SIZE)
+    if (*(size_t *)(best_fit->size - HEADER_SIZE) > _size + HEADER_SIZE) {
+        // add new header
+        size_t header_size = *(size_t *) (best_fit->size - HEADER_SIZE - _size - HEADER_SIZE);
+        memcpy(best_fit->size + _size + HEADER_SIZE, &header_size, HEADER_SIZE);
     }
 
-    List_insertHead((struct Block**)&myalloc.allocatedList, best_fit);
-    return (void*)((char*)best_fit + sizeof(struct Header));
+    // change old header
+    // size_t header_size = _size;
+    // memcpy(best_fit->size, header_size, HEADER_SIZE);
+    *(size_t *) best_fit->size = _size;
+
+    // remove it from freeList
+    List_deleteBlock(&myalloc.freeList, best_fit);
+    // add it to allocatedList
+    List_insertBlock(&myalloc.allocatedList, best_fit);
+
+    ptr = best_fit->size;
+
+    return ptr;
 }
 
 void deallocate(void* _ptr) {
     assert(_ptr != NULL);
-    struct Block* block = (struct Block*)((char*)_ptr - sizeof(struct Header));
-    List_deleteNode((struct Block**)&myalloc.allocatedList, block);  // Remove from allocated list
-    List_insertHead((struct Block**)&myalloc.freeList, block);  // Insert back into free list
+    // struct Block* block = (struct Block*)((char*)_ptr - sizeof(struct Header));
+    // List_deleteNode((struct Block**)&myalloc.allocatedList, block);  // Remove from allocated list
+    // List_insertHead((struct Block**)&myalloc.freeList, block);  // Insert back into free list
     // Code to coalesce free blocks should be here if necessary
 }
 
