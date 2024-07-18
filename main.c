@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include "myalloc.h"
 
-int TOTAL_MEMORY_SIZE = 900;
+int TOTAL_MEMORY_SIZE = 100;
 int EACH_MEMORY_SIZE = sizeof(int);
 
 int main(int argc, char* argv[]) {
+    printf("size of each allocated memory size: %d\n", EACH_MEMORY_SIZE);
     initialize_allocator(TOTAL_MEMORY_SIZE, FIRST_FIT);
     // initialize_allocator(100, BEST_FIT);
     // initialize_allocator(100, WORST_FIT);
@@ -17,9 +18,6 @@ int main(int argc, char* argv[]) {
             printf("%d: Allocation failed\n", i);
             continue;
         }
-        // else{
-        //     printf("%d: Allocation succeeded\n", i);
-        // }
         *(p[i]) = i;
         printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
     }

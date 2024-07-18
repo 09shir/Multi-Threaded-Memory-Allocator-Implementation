@@ -18,8 +18,8 @@ void List_insertBlock(struct Block **headRef, struct Block *node) {
     if (current == NULL || node->size < current->size) {
         node->next = current;
         *headRef = node;
+        return;
     }
-
     while (current->next->size < node->size && current->next != NULL) {
         current = current->next;
         node->next = current->next;
@@ -66,6 +66,13 @@ void List_deleteBlock(struct Block **headRef, struct Block *node) {
     }
 }
 
+size_t List_getSize_t(void *size) {
+    return *(size_t *)(size);
+}
+
+int List_getInt(void *size) {
+    return *(int *)(size);
+}
 // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 void List_insertHead (struct nodeStruct **headRef, struct nodeStruct *node){
