@@ -72,8 +72,6 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
     memcpy(myalloc.memory, &header_size, HEADER_SIZE);
     myalloc.allocatedList = NULL;
 
-    printf("%zu\n", *(size_t*) block->size);
-
     printf("Initialized header of myalloc.memory: %zu\n", *(size_t*)myalloc.memory);
 }
 
@@ -114,41 +112,39 @@ void* allocate(int _size) {
         }
     }
 
-    printf("\n    best_fit: %p\n", best_fit);
-    printf("    free size (best_fit->size): %d\n", List_getInt(best_fit->size - HEADER_SIZE));
-    printf("    requested size + HEADER_SIZE: %d\n", _size + HEADER_SIZE);
-
-    printf("    new header? %d\n", List_getInt(best_fit->size - HEADER_SIZE) > _size + HEADER_SIZE);
+    // printf("\n    best_fit: %p\n", best_fit);
+    // printf("    free size (best_fit->size): %d\n", List_getInt(best_fit->size - HEADER_SIZE));
+    // printf("    requested size + HEADER_SIZE: %d\n", _size + HEADER_SIZE);
 
     // a new header will only be added if (free size (header not included) > requested size + HEADER_SIZE)
     if (List_getInt(best_fit->size - HEADER_SIZE) > _size + HEADER_SIZE) {
         // add new header
-        printf("1 ");
-        size_t header_size = List_getSize_t(best_fit->size - HEADER_SIZE - _size - HEADER_SIZE);
-        printf("2 ");
-        memcpy(best_fit->size + _size + HEADER_SIZE, &header_size, HEADER_SIZE);
+        size_t header_size = List_getSize_t(best_fit->size - HEADER_SIZE) - _size - HEADER_SIZE;
+        memcpy(best_fit->size + _size, &header_size, HEADER_SIZE);
 
         // push new free block from below
         struct Block* newBlock = List_createBlock(best_fit->size + _size + HEADER_SIZE);
+        // printf(" \ninserting block memory: %d\n", List_getInt(newBlock->size - HEADER_SIZE));
         List_insertBlock(&myalloc.freeList, newBlock);
     }
 
     // change old header
-    printf("3 ");
+    // printf("1 ");
     *(size_t *) (best_fit->size - HEADER_SIZE) = _size;
 
     // remove it from freeList
-    printf("4 ");
+    // printf("2 ");
     List_deleteBlock(&myalloc.freeList, best_fit);
     // add it to allocatedList
-    printf("5 \n");
+    // printf("3 ");
     List_insertBlock(&myalloc.allocatedList, best_fit);
+    // printf("4 \n");
 
     ptr = best_fit->size;
 
     // check if allocatedList has best_fit
-    struct Block *b = myalloc.allocatedList;
-    printf("Pushed Block with best_fit->size: %d to allocatedList\n", List_getInt(b->size - HEADER_SIZE));
+    // struct Block *b = myalloc.allocatedList;
+    // printf("Pushed Block with best_fit->size: %d to allocatedList\n", List_getInt(b->size - HEADER_SIZE));
 
     return ptr;
 }

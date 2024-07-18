@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define HEADER_SIZE 8
+
 struct Block* List_createBlock(void *item) {
 
     struct Block* newBlock = malloc(sizeof(struct Block));
@@ -12,26 +14,48 @@ struct Block* List_createBlock(void *item) {
 }
 
 // insert in ascending order
-void List_insertBlock(struct Block **headRef, struct Block *node) {
+void List_insertBlock_inOrder(struct Block **headRef, struct Block *node) {
+    printf("C ");
     struct Block *current = *headRef;
 
-    if (current == NULL || node->size < current->size) {
+    // if new block is smaller than head block, set new block as head
+    if (current == NULL || List_getInt(node->size - HEADER_SIZE) < List_getInt(current->size - HEADER_SIZE)) {
+        printf("A ");
         node->next = current;
         *headRef = node;
         return;
     }
-    while (current->next->size < node->size && current->next != NULL) {
+    printf("B ");
+    while (List_getInt(current->next->size - HEADER_SIZE) < List_getInt(node->size - HEADER_SIZE) && current->next != NULL) {
         current = current->next;
         node->next = current->next;
         current->next = node;
     }
 }
 
+void List_insertBlock(struct Block **headRef, struct Block *node) {
+    struct Block *current = *headRef;
+    // printf("\na");
+
+    if (current == NULL) {
+        *headRef = node;
+        node->next = NULL;
+        return;
+    }
+    while (current->next) {
+        current = current->next;
+    }
+    current->next = node;
+    node->next = NULL;
+}
+
 struct Block* List_searchBlock(struct Block *headRef, struct Block *node) {
     struct Block *current = headRef;
 
     while (current) {
-        if (current->size == node->size){
+        // if (List_getInt(current->size - HEADER_SIZE) == List_getInt(node->size - HEADER_SIZE)){
+        if (current == node){
+            printf("found block with size: %d\n", List_getInt(current->size - HEADER_SIZE));
             return current;
         }
         current = current->next;
@@ -46,6 +70,7 @@ void List_deleteBlock(struct Block **headRef, struct Block *node) {
     // if deleting head
     if (current == node){
         *headRef = current->next ? current->next : NULL;
+        // printf("deleting head\n");
     }
     // other cases
     else{
@@ -55,9 +80,11 @@ void List_deleteBlock(struct Block **headRef, struct Block *node) {
                 if (current->next->next){
                     struct Block *tmp = current->next;
                     current->next = tmp->next;
+                    // printf("deleting middle node\n");
                 }
                 else{
                     current->next = NULL;
+                    // printf("deleting tail\n");
                 }
                 return;
             }
