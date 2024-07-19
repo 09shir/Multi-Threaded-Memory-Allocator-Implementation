@@ -35,7 +35,7 @@ void List_insertBlock_inOrder(struct Block **headRef, struct Block *node) {
 
 void List_insertBlock(struct Block **headRef, struct Block *node) {
     struct Block *current = *headRef;
-    // printf("\na");
+    // printf("a\n");
 
     if (current == NULL) {
         *headRef = node;
@@ -49,12 +49,12 @@ void List_insertBlock(struct Block **headRef, struct Block *node) {
     node->next = NULL;
 }
 
-struct Block* List_searchBlock(struct Block *headRef, struct Block *node) {
+struct Block* List_searchBlock(struct Block *headRef, void *ptr) {
     struct Block *current = headRef;
 
     while (current) {
-        // if (List_getInt(current->size - HEADER_SIZE) == List_getInt(node->size - HEADER_SIZE)){
-        if (current == node){
+        // printf("%p\n", current->size);
+        if (current->size == ptr){
             printf("found block with size: %d\n", List_getInt(current->size - HEADER_SIZE));
             return current;
         }

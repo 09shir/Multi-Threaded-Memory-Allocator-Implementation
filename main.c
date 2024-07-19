@@ -5,10 +5,12 @@ int TOTAL_MEMORY_SIZE = 100;
 int EACH_MEMORY_SIZE = sizeof(int);
 
 int main(int argc, char* argv[]) {
-    printf("size of each allocated memory size: %d\n", EACH_MEMORY_SIZE);
+    // printf("size of each allocated memory size: %d\n", EACH_MEMORY_SIZE);
+    
     initialize_allocator(TOTAL_MEMORY_SIZE, FIRST_FIT);
     // initialize_allocator(100, BEST_FIT);
     // initialize_allocator(100, WORST_FIT);
+
     printf("Using first fit algorithm on memory size %d \n", TOTAL_MEMORY_SIZE);
 
     int* p[50] = {NULL};
