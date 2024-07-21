@@ -228,7 +228,7 @@ void print_statistics() {
     // calculate allocated size and chunks
     struct Block *allocatedBlock = myalloc.allocatedList;
     while (allocatedBlock) {
-        int block_size = List_getInt(allocatedBlock->size - HEADER_SIZE);
+        int block_size = List_getInt(allocatedBlock->size - HEADER_SIZE) + HEADER_SIZE;;
         allocated_size += block_size;
         allocated_chunks++;
         allocatedBlock = allocatedBlock->next;
@@ -250,6 +250,27 @@ void print_statistics() {
         }
 
         freeBlock = freeBlock->next;
+    }
+
+    int total_free_memory = myalloc.size - allocated_size;
+    if (total_free_memory > free_size) {
+        int fragmented_free_memory = total_free_memory - free_size;
+        if (fragmented_free_memory > 0 && fragmented_free_memory <= HEADER_SIZE) {
+            free_chunks++;
+            free_size += fragmented_free_memory;
+
+            if (smallest_free_chunk_size == -1 || fragmented_free_memory < smallest_free_chunk_size) {
+                smallest_free_chunk_size = fragmented_free_memory;
+            }
+
+            if (fragmented_free_memory > largest_free_chunk_size) {
+                largest_free_chunk_size = fragmented_free_memory;
+            }
+        }
+    }
+    
+    if (free_chunks == 1) {
+        smallest_free_chunk_size = largest_free_chunk_size;
     }
 
     // set smallest_free_chunk_size to 0 if no free chunks are found
