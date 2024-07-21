@@ -237,7 +237,7 @@ void print_statistics() {
     // calculate free size and chunks
     struct Block *freeBlock = myalloc.freeList;
     while (freeBlock) {
-        int block_size = List_getInt(freeBlock->size - HEADER_SIZE);
+        int block_size = List_getInt(freeBlock->size - HEADER_SIZE) + HEADER_SIZE;
         free_size += block_size;
         free_chunks++;
 
