@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
     // initialize_allocator(100, BEST_FIT);
     // initialize_allocator(100, WORST_FIT);
 
-    printf("Using first fit algorithm on memory size %d \n", TOTAL_MEMORY_SIZE);
+    printf("Using first fit algorithm on memory size %d \n\n", TOTAL_MEMORY_SIZE);
 
     int* p[50] = {NULL};
     for(int i=0; i<10; ++i) {
@@ -30,18 +30,18 @@ int main(int argc, char* argv[]) {
         if (i % 2 == 0)
             continue;
 
-        printf("Freeing p[%d]\n", i);
+        printf("Freeing p[%d]\n\n", i);
         deallocate(p[i]);
         p[i] = NULL;
     }
 
-    printf("available_memory %d", available_memory());
+    printf("available_memory %d\n", available_memory());
 
     // void* before[100] = {NULL};
     // void* after[100] = {NULL};
     // compact_allocation(before, after);
 
-    // print_statistics();
+    print_statistics();
 
     // You can assume that the destroy_allocator will always be the 
     // last funciton call of main function to avoid memory leak 

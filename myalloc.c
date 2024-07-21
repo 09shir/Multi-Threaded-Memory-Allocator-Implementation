@@ -25,9 +25,9 @@
 struct Myalloc {
     enum allocation_algorithm aalgorithm;
     size_t size;
-    void* memory;
-    struct Block* freeList;
-    struct Block* allocatedList;
+    void* memory; // points to head
+    struct Block* freeList; //LL
+    struct Block* allocatedList; //LL
 };
 
 struct Myalloc myalloc;
@@ -84,6 +84,7 @@ void destroy_allocator() {
 
 }
 
+// TODO: Best Fit
 void* allocate(int _size) {
     void* ptr = NULL;
 
@@ -192,6 +193,7 @@ void deallocate(void* _ptr) {
     
 }
 
+// TODO
 int compact_allocation(void** _before, void** _after) {
     int compacted_size = 0;
 
@@ -213,6 +215,7 @@ int available_memory() {
     return available_memory_size;
 }
 
+// TODO
 void print_statistics() {
     int allocated_size = 0;
     int allocated_chunks = 0;
@@ -222,10 +225,40 @@ void print_statistics() {
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics
+    // calculate allocated size and chunks
+    struct Block *allocatedBlock = myalloc.allocatedList;
+    while (allocatedBlock) {
+        int block_size = List_getInt(allocatedBlock->size - HEADER_SIZE);
+        allocated_size += block_size;
+        allocated_chunks++;
+        allocatedBlock = allocatedBlock->next;
+    }
+
+    // calculate free size and chunks
+    struct Block *freeBlock = myalloc.freeList;
+    while (freeBlock) {
+        int block_size = List_getInt(freeBlock->size - HEADER_SIZE);
+        free_size += block_size;
+        free_chunks++;
+
+        if (smallest_free_chunk_size == -1 || block_size < smallest_free_chunk_size) {
+            smallest_free_chunk_size = block_size;
+        }
+
+        if (block_size > largest_free_chunk_size) {
+            largest_free_chunk_size = block_size;
+        }
+
+        freeBlock = freeBlock->next;
+    }
+
+    // set smallest_free_chunk_size to 0 if no free chunks are found
+    if (smallest_free_chunk_size == -1) {
+        smallest_free_chunk_size = 0;
+    }
 
 
-
-    printf("Allocated size = %d\n", allocated_size);
+    printf("\nAllocated size = %d\n", allocated_size);
     printf("Allocated chunks = %d\n", allocated_chunks);
     printf("Free size = %d\n", free_size);
     printf("Free chunks = %d\n", free_chunks);
