@@ -42,11 +42,25 @@ void List_insertBlock(struct Block **headRef, struct Block *node) {
         node->next = NULL;
         return;
     }
-    while (current->next) {
-        current = current->next;
+    //William: node need to be added in the same sequence as allocated block to simplyfy deallocation
+    else{
+        struct Block **currentPointer = headRef;
+        while(current){ // comparing the node->size with current-> size
+            if (node->size<current->size){
+                *currentPointer = node;
+                node->next=current;
+                return;
+            }
+            else {
+                currentPointer = (char*)current+ sizeof(void*);
+                current = current->next;
+                }
+        }
+        // if unable to find a node->size < current->size in the previous step, that means the node is the last node
+        *currentPointer = node;
+        node->next = NULL;
+        return;
     }
-    current->next = node;
-    node->next = NULL;
 }
 
 struct Block* List_searchBlock(struct Block *headRef, void *ptr) {

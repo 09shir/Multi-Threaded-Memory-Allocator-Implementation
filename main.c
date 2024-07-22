@@ -35,6 +35,10 @@ int main(int argc, char* argv[]) {
         p[i] = NULL;
     }
 
+        printf("Freeing p[%d]\n\n", 2);
+        deallocate(p[2]);
+        p[2] = NULL;
+
     printf("available_memory %d\n", available_memory());
 
     // void* before[100] = {NULL};
