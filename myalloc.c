@@ -130,6 +130,12 @@ void* allocate(int _size) {
         }
     }
 
+    // return null if best_fit not found (memory full)
+    if (!best_fit) {
+        pthread_mutex_unlock(&myalloc.lock);
+        return NULL;
+    }
+
     // printf("\n    best_fit: %p\n", best_fit);
     // printf("    free size (best_fit->size): %d\n", List_getInt(best_fit->size - HEADER_SIZE));
     // printf("    requested size + HEADER_SIZE: %d\n", _size + HEADER_SIZE);

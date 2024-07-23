@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     printf("Using first fit algorithm on memory size %d \n\n", TOTAL_MEMORY_SIZE);
 
     int* p[50] = {NULL};
-    for(int i=0; i<10; ++i) {
+    for(int i=0; i<11; ++i) {
         p[i] = allocate(EACH_MEMORY_SIZE);
         if(p[i] == NULL) {
             printf("%d: Allocation failed\n", i);
