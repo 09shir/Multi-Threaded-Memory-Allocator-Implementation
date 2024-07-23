@@ -98,7 +98,6 @@ void* allocate(int _size) {
 
     if (myalloc.aalgorithm == FIRST_FIT) {
         while (curr) {
-            // if (List_getSize(curr->size) > total_size) {
             if (List_getInt(curr->size - HEADER_SIZE) >= total_size) {
                 best_fit = curr;
                 break;
@@ -108,9 +107,18 @@ void* allocate(int _size) {
     }
     else if (myalloc.aalgorithm == BEST_FIT) {
         while (curr) {
-            // TO DO
+            int tmp_size = List_getInt(curr->size - HEADER_SIZE);
+            if (tmp_size == total_size){
+                best_fit = curr;
+                break;
+            }
+            else if (!tmp || (tmp_size >= total_size && tmp_size < List_getInt(tmp->size - HEADER_SIZE))) {
+                tmp = curr;
+            }
             curr = curr->next;
-            tmp = tmp->next;
+        }
+        if (!best_fit){
+            best_fit = tmp;
         }
     }
 
@@ -163,9 +171,6 @@ void deallocate(void* _ptr) {
 
     printf("available_memory %d\n", available_memory());
 
-
-
-    
         struct Block* freeBlock = myalloc.freeList;
         while (freeBlock->next) {
             void* firstblockEnd;
@@ -189,13 +194,13 @@ void deallocate(void* _ptr) {
             if(allocatedBlock->size<freeBlock->size){//freeBlock is the last chunk
                 int* freesize = freeBlock->size-HEADER_SIZE;
                 *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-                printf("freesize: %zu\n", *freesize);
+                printf("freesize: %d\n", *freesize);
             }
         }
         else{
             int* freesize = freeBlock->size-HEADER_SIZE;
             *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-            printf("freesize: %zu\n", *freesize);
+            printf("freesize: %d\n", *freesize);
         }
     
 
@@ -230,7 +235,7 @@ void print_statistics() {
     int allocated_chunks = 0;
     int free_size = 0;
     int free_chunks = 0;
-    int smallest_free_chunk_size = 0;
+    int smallest_free_chunk_size = -1;
     int largest_free_chunk_size = 0;
 
     // Calculate the statistics

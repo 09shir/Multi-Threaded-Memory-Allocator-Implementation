@@ -52,9 +52,10 @@ void List_insertBlock(struct Block **headRef, struct Block *node) {
                 return;
             }
             else {
-                currentPointer = (char*)current+ sizeof(void*);
+                // currentPointer = (char*)current+ sizeof(void*);
+                currentPointer = (struct Block **)((char*)current + sizeof(void*));
                 current = current->next;
-                }
+            }
         }
         // if unable to find a node->size < current->size in the previous step, that means the node is the last node
         *currentPointer = node;
