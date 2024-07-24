@@ -4,7 +4,7 @@
 #include <string.h>
 #include "myalloc.h"
 #include "list.h"
-#include "list.c"//don't delete for william debug
+//#include "list.c"//don't delete for william debug
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -243,13 +243,33 @@ void deallocate(void* _ptr) {
 }
 
 // TODO
+// TODO
 int compact_allocation(void** _before, void** _after) {
     int compacted_size = 0;
-
-    // compact allocated memory
-    // update _before, _after and compacted_size
-
+    struct Block* allocatedBlock = myalloc.allocatedList;
+    int chunksize;
+    void* chunkAddress;
+    void* chunkNewAddress= myalloc.memory;
+    while(allocatedBlock){
+        chunkAddress = allocatedBlock->size - HEADER_SIZE;
+        chunksize = List_getInt(chunkAddress);
+        compact_allocation_helper(chunkAddress,chunksize, chunkNewAddress);
+        //update allocated list
+        allocatedBlock->size = chunkNewAddress+HEADER_SIZE;
+        chunkNewAddress = chunkNewAddress+ chunksize;
+        allocatedBlock = allocatedBlock->next;
+    }
     return compacted_size;
+}
+
+void compact_allocation_helper(void* origin,int originsize, void*destination){
+    int freespace = origin - destination;
+    int steps = (originsize+freespace-1 / freespace);//round up riginsize/freespace
+    int leftover = originsize - (steps-1)*freespace; 
+    for (int i =0;i<steps;i++){
+        if(i<steps-1) memcpy(destination+i*freespace, origin+i*freespace, freespace);
+        if(i=steps-1) memcpy(destination+i*freespace, origin+i*freespace, leftover);
+    }
 }
 
 int available_memory() {

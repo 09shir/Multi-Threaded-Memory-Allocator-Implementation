@@ -11,6 +11,7 @@ void deallocate(void* _ptr);
 int available_memory();
 void print_statistics();
 int compact_allocation(void** _before, void** _after);
+void compact_allocation_helper(void* origin,int originsize, void*destination);
 void destroy_allocator();
 void printallblocks();
 #endif
