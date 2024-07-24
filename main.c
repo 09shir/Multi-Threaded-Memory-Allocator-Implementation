@@ -9,12 +9,14 @@
 int SUCCESS_CAES = 0;
 int TOTAL_CASE = 0;
 
-void TEST(_Bool f) {
-  if (f) {
-    SUCCESS_CAES += 1;
-  }
-  TOTAL_CASE += 1;
-}
+#define TEST(f) do { \
+  if (f) { \
+    SUCCESS_CAES += 1; \
+  } else { \
+    printf("Test failed: %s at %s:%d\n", #f, __FILE__, __LINE__); \
+  } \
+  TOTAL_CASE += 1; \
+} while (0)
 
 void print_test_result() {
   printf("----TEST_RESULT_Success: %d/%d\n", SUCCESS_CAES, TOTAL_CASE);

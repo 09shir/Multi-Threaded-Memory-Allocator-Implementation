@@ -70,7 +70,7 @@ struct Block* List_searchBlock(struct Block *headRef, void *ptr) {
     while (current) {
         // printf("%p\n", current->size);
         if (current->size == ptr){
-            printf("found block with size: %d\n", List_getInt(current->size - HEADER_SIZE));
+            // printf("found block with size: %d\n", List_getInt(current->size - HEADER_SIZE));
             return current;
         }
         current = current->next;

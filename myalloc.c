@@ -77,7 +77,7 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
 
     pthread_mutex_init(&myalloc.lock, NULL);
 
-    printf("Initialized header of myalloc.memory: %zu\n", *(size_t*)myalloc.memory);
+    // printf("Initialized header of myalloc.memory: %zu\n", *(size_t*)myalloc.memory);
 }
 
 void destroy_allocator() {
@@ -185,9 +185,9 @@ void deallocate(void* _ptr) {
     List_deleteBlock(&myalloc.allocatedList, block_to_remove);
     List_insertBlock(&myalloc.freeList, block_to_remove);
 
-    printf("deallocated %p\n", block_to_remove->size);
+    // printf("deallocated %p\n", block_to_remove->size);
 
-    printf("available_memory %d\n", available_memory());
+    // printf("available_memory %d\n", available_memory());
 
     struct Block* freeBlock = myalloc.freeList;
     while (freeBlock->next) {
@@ -212,13 +212,13 @@ void deallocate(void* _ptr) {
         if(allocatedBlock->size<freeBlock->size){//freeBlock is the last chunk
             int* freesize = freeBlock->size-HEADER_SIZE;
             *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-            printf("freesize: %d\n", *freesize);
+            // printf("freesize: %d\n", *freesize);
         }
     }
     else{
         int* freesize = freeBlock->size-HEADER_SIZE;
         *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-        printf("freesize: %d\n", *freesize);
+        // printf("freesize: %d\n", *freesize);
     }
     
     pthread_mutex_unlock(&myalloc.lock);
