@@ -106,7 +106,7 @@ void* allocate(int _size) {
 
     if (myalloc.aalgorithm == FIRST_FIT) {
         while (curr) {
-            if (List_getInt(curr->size - HEADER_SIZE) >= total_size) {
+            if (List_getInt(curr->size - HEADER_SIZE) + HEADER_SIZE >= total_size) {
                 best_fit = curr;
                 break;
             }
@@ -115,12 +115,12 @@ void* allocate(int _size) {
     }
     else if (myalloc.aalgorithm == BEST_FIT) {
         while (curr) {
-            int tmp_size = List_getInt(curr->size - HEADER_SIZE);
+            int tmp_size = List_getInt(curr->size - HEADER_SIZE) + HEADER_SIZE;
             if (tmp_size == total_size){
                 best_fit = curr;
                 break;
             }
-            else if (!tmp || (tmp_size >= total_size && tmp_size < List_getInt(tmp->size - HEADER_SIZE))) {
+            else if (!tmp || (tmp_size >= total_size && tmp_size < List_getInt(tmp->size - HEADER_SIZE) + HEADER_SIZE)) {
                 tmp = curr;
             }
             curr = curr->next;
@@ -135,10 +135,6 @@ void* allocate(int _size) {
         pthread_mutex_unlock(&myalloc.lock);
         return NULL;
     }
-
-    // printf("\n    best_fit: %p\n", best_fit);
-    // printf("    free size (best_fit->size): %d\n", List_getInt(best_fit->size - HEADER_SIZE));
-    // printf("    requested size + HEADER_SIZE: %d\n", _size + HEADER_SIZE);
 
     // a new header will only be added if (free size (header not included) > requested size + HEADER_SIZE)
     if (List_getInt(best_fit->size - HEADER_SIZE) > _size + HEADER_SIZE) {
@@ -339,10 +335,10 @@ void print_statistics() {
 }
 
 void printallblocks(){
-    printf("Allocated List\n");
+    printf("\nAllocated List\n");
     struct Block* block = myalloc.allocatedList;
     while(block){
-        printf("Block start at %p", (void*)(block->size - HEADER_SIZE));
+        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
@@ -353,7 +349,7 @@ void printallblocks(){
     printf("Free List\n");
     block = myalloc.freeList;
     while(block){
-        printf("Block start at %p", (void*)(block->size - HEADER_SIZE));
+        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
