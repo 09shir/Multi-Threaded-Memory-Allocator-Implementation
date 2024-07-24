@@ -252,23 +252,39 @@ int compact_allocation(void** _before, void** _after) {
     void* chunkNewAddress= myalloc.memory;
     while(allocatedBlock){
         chunkAddress = allocatedBlock->size - HEADER_SIZE;
-        chunksize = List_getInt(chunkAddress);
+        chunksize = List_getInt(chunkAddress)+HEADER_SIZE;
         compact_allocation_helper(chunkAddress,chunksize, chunkNewAddress);
+        //update before/after
+        _before[compacted_size] = chunkAddress;
+        _after[compacted_size] = chunkNewAddress;
+        compacted_size++;
         //update allocated list
         allocatedBlock->size = chunkNewAddress+HEADER_SIZE;
         chunkNewAddress = chunkNewAddress+ chunksize;
+        //to obtain the ending address of last chunk
+        if(allocatedBlock->next==NULL) chunkAddress = allocatedBlock->size + List_getInt(chunkNewAddress);
+        //next loop
         allocatedBlock = allocatedBlock->next;
+
     }
+    //update freelist
+    while(myalloc.freeList->next){List_deleteBlock(&myalloc.freeList, myalloc.freeList->next);}
+    myalloc.freeList->size = chunkAddress+HEADER_SIZE;
+    chunksize = myalloc.memory + myalloc.size - chunkAddress;
+    int* freesize = myalloc.freeList->size - HEADER_SIZE;
+    *freesize = chunksize-HEADER_SIZE;
+    compacted_size++;
     return compacted_size;
 }
 
 void compact_allocation_helper(void* origin,int originsize, void*destination){
     int freespace = origin - destination;
-    int steps = (originsize+freespace-1 / freespace);//round up riginsize/freespace
+    if(freespace == 0 )return; // nothing need to be done if not moving.
+    int steps = (originsize+freespace-1 )/freespace;//round up riginsize/freespace
     int leftover = originsize - (steps-1)*freespace; 
     for (int i =0;i<steps;i++){
         if(i<steps-1) memcpy(destination+i*freespace, origin+i*freespace, freespace);
-        if(i=steps-1) memcpy(destination+i*freespace, origin+i*freespace, leftover);
+        if(i==steps-1) memcpy(destination+i*freespace, origin+i*freespace, leftover);
     }
 }
 

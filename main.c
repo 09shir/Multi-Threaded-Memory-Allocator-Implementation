@@ -53,8 +53,15 @@ int main(int argc, char* argv[]) {
     print_statistics();
     printallblocks();
     deallocate (p[1]);
+    print_statistics();
     printallblocks();
 
+    //test compaction
+    void* before[100];
+    void* after[100];
+    compact_allocation(before,after);
+    print_statistics();
+    printallblocks();
 
 
     // destroy_allocator();
