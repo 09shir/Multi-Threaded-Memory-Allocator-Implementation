@@ -178,8 +178,6 @@ void* allocate(int _size) {
 void deallocate(void* _ptr) {
     assert(_ptr != NULL);
 
-    pthread_mutex_lock(&myalloc.lock);
-
     struct Block* block_to_remove = List_searchBlock(myalloc.allocatedList, _ptr);
 
     List_deleteBlock(&myalloc.allocatedList, block_to_remove);
@@ -189,39 +187,60 @@ void deallocate(void* _ptr) {
 
     printf("available_memory %d\n", available_memory());
 
-    struct Block* freeBlock = myalloc.freeList;
-    while (freeBlock->next) {
-        void* firstblockEnd;
-        int size = List_getInt(freeBlock->size - HEADER_SIZE);
-        firstblockEnd = size + (char*)freeBlock->size;
-        void* secondblockStart =  freeBlock->next->size - HEADER_SIZE;
-        if (firstblockEnd == secondblockStart){
-            int* sizeptr = freeBlock->size-HEADER_SIZE ;
-            size = *sizeptr;
-            size = size + List_getInt(secondblockStart) + HEADER_SIZE;
-            *sizeptr = size;
-            List_deleteBlock(&myalloc.freeList, freeBlock->next);
+        struct Block* freeBlock = myalloc.freeList;
+        while (freeBlock->next) {
+            void* firstblockEnd;
+            int size = List_getInt(freeBlock->size - HEADER_SIZE);
+            firstblockEnd = size + (char*)freeBlock->size;
+            void* secondblockStart =  freeBlock->next->size - HEADER_SIZE;
+            if (firstblockEnd == secondblockStart){
+                int* sizeptr = freeBlock->size-HEADER_SIZE ;
+                size = *sizeptr;
+                size = size + List_getInt(secondblockStart) + HEADER_SIZE;
+                *sizeptr = size;
+                List_deleteBlock(&myalloc.freeList, freeBlock->next);
+            }
+            else freeBlock = freeBlock->next;
         }
-        else freeBlock = freeBlock->next;
-    }
-    //check if the freeblock is pointing to the very last chunk in the memory
-    if (myalloc.allocatedList!=NULL){
-        
-        struct Block* allocatedBlock = myalloc.allocatedList;
-        while (allocatedBlock->next) {allocatedBlock = allocatedBlock->next;}
-        if(allocatedBlock->size<freeBlock->size){//freeBlock is the last chunk
+        //solve framentation that are toot small to be included in the free list
+        if (myalloc.allocatedList!=NULL){
+            
+            struct Block* allocatedBlock = myalloc.allocatedList;
+            int indicator = 0;
+            //check if there is free space immediately on the right hand side of the free block.
+            while (allocatedBlock->next){
+                if(allocatedBlock->size>freeBlock->size){//loop until allocated block is on the right hand side of the free block
+                    indicator++;}
+                if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
+                    int* freesize = freeBlock->size-HEADER_SIZE;
+                    *freesize = allocatedBlock->size - freeBlock->size -HEADER_SIZE;
+                    printf("freesize: %d\n", *freesize);
+                }
+                allocatedBlock = allocatedBlock->next;
+                }
+            // same as above loop, just one more loop without allocatedBlock = allocatedBlock->next
+            if(allocatedBlock->size>freeBlock->size){//loop until allocated block is on the right hand side of the free block
+                indicator++;}
+            if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
+                int* freesize = freeBlock->size-HEADER_SIZE;
+                *freesize = allocatedBlock->size - freeBlock->size;
+                printf("freesize: %d\n", *freesize);
+            }
+            //if the freeblock is pointing to the very last chunk in the memory, merge with the rest of the memory together.
+            if(allocatedBlock->size<freeBlock->size){
+                int* freesize = freeBlock->size-HEADER_SIZE;
+                *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
+                printf("freesize: %d\n", *freesize);
+            }
+        }
+        //if there is no allocated block, then entire thing is free.
+        else{
             int* freesize = freeBlock->size-HEADER_SIZE;
             *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
             printf("freesize: %d\n", *freesize);
         }
-    }
-    else{
-        int* freesize = freeBlock->size-HEADER_SIZE;
-        *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-        printf("freesize: %d\n", *freesize);
-    }
     
-    pthread_mutex_unlock(&myalloc.lock);
+
     
 }
 
@@ -319,5 +338,29 @@ void print_statistics() {
     printf("Smallest free chunk size = %d\n", smallest_free_chunk_size);
 }
 
-
+void printallblocks(){
+    printf("Allocated List\n");
+    struct Block* block = myalloc.allocatedList;
+    while(block){
+        printf("Block start at %p", (void*)(block + HEADER_SIZE));
+        printf("\t");
+        printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
+        printf("\t");
+        printf("Block end at %p", (void*)((char*)block + HEADER_SIZE + List_getInt(block->size - HEADER_SIZE)));
+        printf("\n");
+        block = block->next;
+    }
+    printf("Free List\n");
+    block = myalloc.freeList;
+    while(block){
+        printf("Block start at %p", (void*)(block + HEADER_SIZE));
+        printf("\t");
+        printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
+        printf("\t");
+        printf("Block end at %p", (void*)((char*)block + HEADER_SIZE + List_getInt(block->size - HEADER_SIZE)));
+        printf("\n");
+        block = block->next;
+    }
+    
+}
 

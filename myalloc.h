@@ -11,5 +11,5 @@ int available_memory();
 void print_statistics();
 int compact_allocation(void** _before, void** _after);
 void destroy_allocator();
-
+void printallblocks();
 #endif

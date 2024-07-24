@@ -40,16 +40,18 @@ int main(int argc, char* argv[]) {
         p[2] = NULL;
 
     printf("available_memory %d\n", available_memory());
-
+    print_statistics();
+    printallblocks();
     // void* before[100] = {NULL};
     // void* after[100] = {NULL};
     // compact_allocation(before, after);
 
+    
+    //test free fragmentation
+    allocate(27);
     print_statistics();
 
-    // You can assume that the destroy_allocator will always be the 
-    // last funciton call of main function to avoid memory leak 
-    // before exit
+
 
     // destroy_allocator();
 
