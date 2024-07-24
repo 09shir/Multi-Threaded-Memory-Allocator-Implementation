@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __MYALLOC_H__
 #define __MYALLOC_H__
 

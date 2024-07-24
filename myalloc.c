@@ -4,6 +4,7 @@
 #include <string.h>
 #include "myalloc.h"
 #include "list.h"
+#include "list.c"//don't delete for william debug
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -184,6 +185,7 @@ void deallocate(void* _ptr) {
     printf("available_memory %d\n", available_memory());
 
         struct Block* freeBlock = myalloc.freeList;
+        //merge two consecutive free blocks
         while (freeBlock->next) {
             void* firstblockEnd;
             int size = List_getInt(freeBlock->size - HEADER_SIZE);
@@ -205,11 +207,11 @@ void deallocate(void* _ptr) {
             int indicator = 0;
             //check if there is free space immediately on the right hand side of the free block.
             while (allocatedBlock->next){
-                if(allocatedBlock->size>freeBlock->size){//loop until allocated block is on the right hand side of the free block
+                if(allocatedBlock->size>block_to_remove->size){//loop until allocated block is on the right hand side of the free block
                     indicator++;}
                 if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
-                    int* freesize = freeBlock->size-HEADER_SIZE;
-                    *freesize = allocatedBlock->size - freeBlock->size -HEADER_SIZE;
+                    int* freesize = block_to_remove->size-HEADER_SIZE;
+                    *freesize = allocatedBlock->size - block_to_remove->size -HEADER_SIZE;
                     printf("freesize: %d\n", *freesize);
                 }
                 allocatedBlock = allocatedBlock->next;

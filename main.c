@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "myalloc.h"
+#include "myalloc.c"//don't delete for william debug
 
 int TOTAL_MEMORY_SIZE = 100;
 int EACH_MEMORY_SIZE = sizeof(int);
@@ -48,8 +49,10 @@ int main(int argc, char* argv[]) {
 
     
     //test free fragmentation
-    allocate(21);
+    p[1] = allocate(21);
     print_statistics();
+    printallblocks();
+    deallocate (p[1]);
     printallblocks();
 
 

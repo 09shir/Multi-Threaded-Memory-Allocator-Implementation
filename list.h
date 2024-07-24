@@ -1,3 +1,4 @@
+#pragma once
 #include <stddef.h>
 
 #define MAX_ITEM_SIZE 10
