@@ -13,7 +13,7 @@ int TOTAL_CASE = 0;
   if (f) { \
     SUCCESS_CAES += 1; \
   } else { \
-    printf("Test failed: %s at %s:%d\n", #f, __FILE__, __LINE__); \
+    printf("Test #%d failed: %s at %s:%d\n", TOTAL_CASE+1, #f, __FILE__, __LINE__); \
   } \
   TOTAL_CASE += 1; \
 } while (0)
@@ -29,12 +29,14 @@ void test_correct_space_allocation() {
   void *p[10] = {NULL};
   for (int i = 0; i < 10; i++) {
     __int32_t *ptr = (__int32_t *)allocate(sizeof(__int32_t) * 2);
+    printf("Allocating %d: %p, %lu\n", i, ptr, sizeof(ptr));
 
     if (ptr != NULL) {
       ptr[0] = 0;
       ptr[1] = 1;
       // Inspect header
       if (i < 5) {
+        // printf("1\n");
         TEST(*(uint64_t *)((char *)ptr - HEADER_SIZE) ==
                  (sizeof(__int32_t) * 2) + HEADER_SIZE ||
              *(uint64_t *)((char *)ptr - HEADER_SIZE) ==
@@ -45,13 +47,17 @@ void test_correct_space_allocation() {
   }
   for (int i = 0; i < 10; i++) {
     if (i < 6) {
+    //   printf("2\n");
       TEST(p[i] != NULL);
     } else {
+    //   printf("3: %d, %p\n", i, p[i]);
       TEST(p[i] == NULL);
     }
   }
   TEST(*((uint64_t *)((char *)p[5] - HEADER_SIZE)) == 20);
+  printf("> Result: %llu\n", *((uint64_t *)((char *)p[5] - HEADER_SIZE)));
   TEST(available_memory() == 0);
+  printf("> available_memory() == %d\n", available_memory());
   for (int i = 0; i < 10; i++) {
     __int32_t *ptr = (__int32_t *)p[i];
     if (ptr != NULL) {
@@ -67,14 +73,19 @@ void test_correct_space_allocation() {
     }
   }
   TEST(available_memory() == 92);
+  printf("> available_memory() == %d\n", available_memory());
   struct Stats stats;
   get_statistics(&stats);
   TEST(stats.allocated_size == 0);
   TEST(stats.allocated_chunks == 0);
   TEST(stats.free_size == 92);
+  printf("> free_size == %d\n", stats.free_size);
   TEST(stats.free_chunks == 1);
+  printf("> free_chunks == %d\n", stats.free_chunks);
   TEST(stats.largest_free_chunk_size == 92);
+  printf("> largest_free_chunk_size == %d\n", stats.largest_free_chunk_size);
   TEST(stats.smallest_free_chunk_size == 92);
+  printf("> smallest_free_chunk_size == %d\n", stats.smallest_free_chunk_size);
 }
 
 void test_compact() {
