@@ -342,22 +342,22 @@ void printallblocks(){
     printf("Allocated List\n");
     struct Block* block = myalloc.allocatedList;
     while(block){
-        printf("Block start at %p", (void*)(block + HEADER_SIZE));
+        printf("Block start at %p", (void*)(block->size - HEADER_SIZE));
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
-        printf("Block end at %p", (void*)((char*)block + HEADER_SIZE + List_getInt(block->size - HEADER_SIZE)));
+        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
         printf("\n");
         block = block->next;
     }
     printf("Free List\n");
     block = myalloc.freeList;
     while(block){
-        printf("Block start at %p", (void*)(block + HEADER_SIZE));
+        printf("Block start at %p", (void*)(block->size - HEADER_SIZE));
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
-        printf("Block end at %p", (void*)((char*)block + HEADER_SIZE + List_getInt(block->size - HEADER_SIZE)));
+        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
         printf("\n");
         block = block->next;
     }
