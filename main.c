@@ -254,12 +254,12 @@ void test_worst_fit(int i) {
 
 /**
  * arg 1: caseIndex
- *       -> 1: test_first_fit
- *       -> 2: test_best_fit
+ *       -> 0: test_first_fit
+ *       -> 1: test_best_fit
  * arg 2: testIndex
  *       -> 0: test_correct_space_allocation()
  *       -> 1: test_first_fit_algorithm()
- *       -> 2: test_compact()
+ *       -> 2: test_compact() (not done)
  *       -> 3: test_threading()
  */
 int main(int argc, char *argv[]) {
