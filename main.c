@@ -50,6 +50,7 @@ int main(int argc, char* argv[]) {
     //test free fragmentation
     allocate(27);
     print_statistics();
+    printallblocks();
 
 
 
