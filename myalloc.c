@@ -4,7 +4,7 @@
 #include <string.h>
 #include "myalloc.h"
 #include "list.h"
-//#include "list.c"//don't delete for william debug
+#include "list.c"//don't delete for william debug
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -84,6 +84,11 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
 void destroy_allocator() {
     pthread_mutex_lock(&myalloc.lock);
     free(myalloc.memory);
+    while(myalloc.freeList){
+        List_deleteBlock(&myalloc.freeList,myalloc.freeList);}
+    while(myalloc.allocatedList){
+        List_deleteBlock(&myalloc.allocatedList,myalloc.allocatedList);}
+
     myalloc.memory = NULL;
     // Free all nodes in freeList and allocatedList
     // Assuming List_deleteNode manages freeing nodes

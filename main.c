@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "myalloc.h"
-//#include "myalloc.c"//don't delete for william debug
+#include "myalloc.c"//don't delete for william debug
 
 int TOTAL_MEMORY_SIZE = 100;
 int EACH_MEMORY_SIZE = sizeof(int);
@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     printallblocks();
 
 
-    // destroy_allocator();
+    destroy_allocator();
 
     return 0;
 }
