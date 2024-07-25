@@ -210,7 +210,9 @@ void deallocate(void* _ptr) {
                 size = *sizeptr;
                 size = size + List_getInt(secondblockStart) + HEADER_SIZE;
                 *sizeptr = size;
+                struct Block* deletePointer = freeBlock->next;
                 List_deleteBlock(&myalloc.freeList, freeBlock->next);
+                free(deletePointer);
             }
             else freeBlock = freeBlock->next;
         }
@@ -282,7 +284,11 @@ int compact_allocation(void** _before, void** _after) {
 
     }
     //update freelist
-    while(myalloc.freeList->next){List_deleteBlock(&myalloc.freeList, myalloc.freeList->next);}
+    while(myalloc.freeList->next){
+        struct Block* deletePointer = myalloc.freeList->next->next;
+        List_deleteBlock(&myalloc.freeList, myalloc.freeList->next);
+        free(deletePointer);
+        }
     myalloc.freeList->size = chunkAddress+HEADER_SIZE;
     chunksize = myalloc.memory + myalloc.size - chunkAddress;
     int* freesize = myalloc.freeList->size - HEADER_SIZE;
