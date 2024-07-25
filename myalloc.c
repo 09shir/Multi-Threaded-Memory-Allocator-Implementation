@@ -84,15 +84,20 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
 void destroy_allocator() {
     pthread_mutex_lock(&myalloc.lock);
     free(myalloc.memory);
-    struct Block* deleteblock; 
-    while(myalloc.freeList){
-        deleteblock = myalloc.freeList;
-        List_deleteBlock(&myalloc.freeList,myalloc.freeList);
-        free(deleteblock);}
-    while(myalloc.allocatedList){
-        deleteblock = myalloc.allocatedList;
-        List_deleteBlock(&myalloc.allocatedList,myalloc.allocatedList);
-        free(deleteblock);}
+    struct Block* freeBlock = myalloc.freeList; 
+    struct Block* allocatedBlock = myalloc.allocatedList; 
+    while(freeBlock){
+        struct Block* tmp = freeBlock;
+        freeBlock = freeBlock->next;
+        free(tmp);
+    }
+    myalloc.freeList = NULL;
+    while(allocatedBlock){
+        struct Block* tmp = allocatedBlock;
+        allocatedBlock = allocatedBlock->next;
+        free(tmp);
+    }
+    myalloc.allocatedList = NULL;
     myalloc.memory = NULL;
     // Free all nodes in freeList and allocatedList
     // Assuming List_deleteNode manages freeing nodes
