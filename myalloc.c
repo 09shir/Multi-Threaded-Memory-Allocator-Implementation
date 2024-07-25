@@ -78,7 +78,7 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
 
     pthread_mutex_init(&myalloc.lock, NULL);
 
-    printf("Initialized header of myalloc.memory: %zu\n", *(size_t*)myalloc.memory);
+    // printf("Initialized header of myalloc.memory: %zu\n", *(size_t*)myalloc.memory);
 }
 
 void destroy_allocator() {
@@ -194,9 +194,9 @@ void deallocate(void* _ptr) {
     List_deleteBlock(&myalloc.allocatedList, block_to_remove);
     List_insertBlock(&myalloc.freeList, block_to_remove);
 
-    printf("deallocated %p\n", block_to_remove->size);
+    // printf("deallocated %p\n", block_to_remove->size);
 
-    printf("available_memory %d\n", available_memory());
+    // printf("available_memory %d\n", available_memory());
 
         struct Block* freeBlock = myalloc.freeList;
         
@@ -212,7 +212,7 @@ void deallocate(void* _ptr) {
                 if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
                     int* freesize = block_to_remove->size-HEADER_SIZE;
                     *freesize = allocatedBlock->size - block_to_remove->size -HEADER_SIZE;//mm debug
-                    printf("freesize: %d\n", *freesize);
+                    // printf("freesize: %d\n", *freesize);
                 }
                 allocatedBlock = allocatedBlock->next;
                 }
@@ -222,20 +222,20 @@ void deallocate(void* _ptr) {
             if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
                 int* freesize = freeBlock->size-HEADER_SIZE;
                 *freesize = allocatedBlock->size - freeBlock->size;
-                printf("freesize: %d\n", *freesize);
+                // printf("freesize: %d\n", *freesize);
             }
             //if the freeblock is pointing to the very last chunk in the memory, merge with the rest of the memory together.
             if(allocatedBlock->size<freeBlock->size){
                 int* freesize = freeBlock->size-HEADER_SIZE;
                 *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-                printf("freesize: %d\n", *freesize);
+                // printf("freesize: %d\n", *freesize);
             }
         }
         //if there is no allocated block, then entire thing is free.
         else{
             int* freesize = freeBlock->size-HEADER_SIZE;
             *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-            printf("freesize: %d\n", *freesize);
+            // printf("freesize: %d\n", *freesize);
         }
 
         //merge two consecutive free blocks
@@ -405,22 +405,38 @@ void printallblocks(){
     printf("\nAllocated List\n");
     struct Block* block = myalloc.allocatedList;
     while(block){
-        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
+        char start_str[20];
+        sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
+        int start_int = (int) strtol(start_str, NULL, 16);
+
+        char end_str[20];
+        sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
+        int end_int = (int) strtol(end_str, NULL, 16);
+
+        printf("> Block start at %d", start_int);
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
-        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
+        printf("Block end at %d", end_int);
         printf("\n");
         block = block->next;
     }
     printf("Free List\n");
     block = myalloc.freeList;
     while(block){
-        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
+        char start_str[20];
+        sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
+        int start_int = (int) strtol(start_str, NULL, 16);
+
+        char end_str[20];
+        sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
+        int end_int = (int) strtol(end_str, NULL, 16);
+
+        printf("> Block start at %d", start_int);
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
-        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
+        printf("Block end at %d", end_int);
         printf("\n");
         block = block->next;
     }
