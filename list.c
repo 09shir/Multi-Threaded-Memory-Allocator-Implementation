@@ -81,12 +81,9 @@ struct Block* List_searchBlock(struct Block *headRef, void *ptr) {
 
 void List_deleteBlock(struct Block **headRef, struct Block *node) {
     struct Block *current = *headRef;
-    struct Block *deleteBlock;
     // if deleting head
     if (current == node){
-        deleteBlock = current;
         *headRef = current->next ? current->next : NULL;
-        free(deleteBlock);
         // printf("deleting head\n");
     }
     // other cases
@@ -97,11 +94,9 @@ void List_deleteBlock(struct Block **headRef, struct Block *node) {
                 if (current->next->next){
                     struct Block *tmp = current->next;
                     current->next = tmp->next;
-                    free(tmp);
                     // printf("deleting middle node\n");
                 }
                 else{
-                    free(current->next);
                     current->next = NULL;
                     // printf("deleting tail\n");
                 }
