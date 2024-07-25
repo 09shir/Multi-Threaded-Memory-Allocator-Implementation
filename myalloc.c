@@ -199,23 +199,7 @@ void deallocate(void* _ptr) {
     printf("available_memory %d\n", available_memory());
 
         struct Block* freeBlock = myalloc.freeList;
-        //merge two consecutive free blocks
-        while (freeBlock->next) {
-            void* firstblockEnd;
-            int size = List_getInt(freeBlock->size - HEADER_SIZE);
-            firstblockEnd = size + (char*)freeBlock->size;
-            void* secondblockStart =  freeBlock->next->size - HEADER_SIZE;
-            if (firstblockEnd == secondblockStart){
-                int* sizeptr = freeBlock->size-HEADER_SIZE ;
-                size = *sizeptr;
-                size = size + List_getInt(secondblockStart) + HEADER_SIZE;
-                *sizeptr = size;
-                struct Block* deletePointer = freeBlock->next;
-                List_deleteBlock(&myalloc.freeList, freeBlock->next);
-                free(deletePointer);
-            }
-            else freeBlock = freeBlock->next;
-        }
+        
         //solve framentation that are toot small to be included in the free list
         if (myalloc.allocatedList!=NULL){
             
@@ -227,7 +211,7 @@ void deallocate(void* _ptr) {
                     indicator++;}
                 if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
                     int* freesize = block_to_remove->size-HEADER_SIZE;
-                    *freesize = allocatedBlock->size - block_to_remove->size -HEADER_SIZE;
+                    *freesize = allocatedBlock->size - block_to_remove->size -HEADER_SIZE;//mm debug
                     printf("freesize: %d\n", *freesize);
                 }
                 allocatedBlock = allocatedBlock->next;
@@ -253,6 +237,28 @@ void deallocate(void* _ptr) {
             *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
             printf("freesize: %d\n", *freesize);
         }
+
+        //merge two consecutive free blocks
+        //printallblocks();//debug
+        while (freeBlock->next) {
+            void* firstblockEnd;
+            int size = List_getInt(freeBlock->size - HEADER_SIZE);
+            firstblockEnd = size + (char*)freeBlock->size;
+            void* secondblockStart =  freeBlock->next->size - HEADER_SIZE;
+            if (firstblockEnd == secondblockStart){
+                int* sizeptr = freeBlock->size-HEADER_SIZE ;
+                size = *sizeptr;
+                size = size + List_getInt(secondblockStart) + HEADER_SIZE;
+                *sizeptr = size;
+                struct Block* deletePointer = freeBlock->next;
+                List_deleteBlock(&myalloc.freeList, freeBlock->next);
+                free(deletePointer);
+            }
+            else freeBlock = freeBlock->next;
+        }
+        //printallblocks();//debug
+
+
     
 
     
@@ -285,7 +291,10 @@ int compact_allocation(void** _before, void** _after) {
     }
     //update freelist
     while(myalloc.freeList->next){
-        struct Block* deletePointer = myalloc.freeList->next->next;
+        struct Block* deletePointer = myalloc.freeList->next;
+        //printf("%p",myalloc.freeList->next);
+        //printf("%p",deletePointer);
+
         List_deleteBlock(&myalloc.freeList, myalloc.freeList->next);
         free(deletePointer);
         }
