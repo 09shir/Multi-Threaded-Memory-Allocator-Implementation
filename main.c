@@ -171,11 +171,6 @@ void allocation_test_8() {
 
     int *p[11] = {NULL};
 
-    // for (int i = 0; i < 8; i++) {
-    //     printf("%d\n", 9 - ( i % 2 ? i-1 : i ) );
-    //     p[i] = allocate(9 - ( i % 2 ? i-1 : i ) );
-    //     // *(p[i]) = 4;
-    // }
     p[0] = allocate(9);
     p[1] = allocate(9);
     p[2] = allocate(8);
@@ -185,10 +180,14 @@ void allocation_test_8() {
     p[6] = allocate(6);
     p[7] = allocate(6);
 
+    printallblocks();
+
     deallocate(p[0]);
     deallocate(p[2]);
     deallocate(p[4]);
     deallocate(p[6]);
+
+    printallblocks();
 
     p[8] = allocate(6);
 
@@ -377,25 +376,21 @@ void deallocate_test_6() {
 
 int main(int argc, char* argv[]) {
 
-    allocation_test_1();
-    allocation_test_2();
-    allocation_test_3();
-    allocation_test_4();
-    allocation_test_5();
-    allocation_test_6();
-    allocation_test_7();
+    // allocation_test_1();
+    // allocation_test_2();
+    // allocation_test_3();
+    // allocation_test_4();
+    // allocation_test_5();
+    // allocation_test_6();
+    // allocation_test_7();
     allocation_test_8();
 
-    deallocate_test_1();
-    deallocate_test_2();
-    deallocate_test_3();
-<<<<<<< Updated upstream
+    // deallocate_test_1();
+    // deallocate_test_2();
+    // deallocate_test_3();
     // deallocate_test_4();
-=======
-    deallocate_test_4();
->>>>>>> Stashed changes
-    deallocate_test_5();
-    deallocate_test_6();
+    // deallocate_test_5();
+    // deallocate_test_6();
       
     print_test_result();
     return 0;
