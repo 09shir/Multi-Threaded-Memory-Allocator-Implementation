@@ -194,7 +194,7 @@ void deallocate(void* _ptr) {
     List_deleteBlock(&myalloc.allocatedList, block_to_remove);
     List_insertBlock(&myalloc.freeList, block_to_remove);
     struct Block* block_to_start = (block_to_remove->size)-HEADER_SIZE;
-    printf("\ndeallocated %p\n", block_to_start);
+    // printf("\ndeallocated %p\n", block_to_start);
 
     // printf("available_memory %d\n", available_memory());
 
