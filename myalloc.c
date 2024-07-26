@@ -257,11 +257,18 @@ void deallocate(void* _ptr) {
             int size = List_getInt(freeBlock->size - HEADER_SIZE);
             firstblockEnd = size + (char*)freeBlock->size;
             void* secondblockStart =  freeBlock->next->size - HEADER_SIZE;
+            int secondblockSize = List_getInt(freeBlock->next->size - HEADER_SIZE) + HEADER_SIZE;
+            void* secondblockEnd = secondblockSize + (char*)freeBlock->next->size - HEADER_SIZE;
             if (firstblockEnd == secondblockStart){
                 int* sizeptr = freeBlock->size-HEADER_SIZE ;
                 size = *sizeptr;
                 size = size + List_getInt(secondblockStart) + HEADER_SIZE;
                 *sizeptr = size;
+                struct Block* deletePointer = freeBlock->next;
+                List_deleteBlock(&myalloc.freeList, freeBlock->next);
+                free(deletePointer);
+            }
+            else if (firstblockEnd == secondblockEnd) {
                 struct Block* deletePointer = freeBlock->next;
                 List_deleteBlock(&myalloc.freeList, freeBlock->next);
                 free(deletePointer);
