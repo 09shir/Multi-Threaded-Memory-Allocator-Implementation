@@ -194,7 +194,7 @@ void deallocate(void* _ptr) {
     List_deleteBlock(&myalloc.allocatedList, block_to_remove);
     List_insertBlock(&myalloc.freeList, block_to_remove);
     struct Block* block_to_start = (block_to_remove->size)-HEADER_SIZE;
-    // printf("deallocated %p\n", block_to_start);
+    printf("\ndeallocated %p\n", block_to_start);
 
     // printf("available_memory %d\n", available_memory());
 
@@ -221,15 +221,26 @@ void deallocate(void* _ptr) {
                 indicator++;}
             if(indicator == 1){ 
                 // indicator == 1 means we found the next allocated space ofter free space. 
-                int* freesize = block_to_remove->size-HEADER_SIZE;
-                *freesize = allocatedBlock->size - freeBlock->size;
-                // printf("freesize: %d\n", *freesize);
+                void* firstblockEnd;
+                int size = List_getInt(freeBlock->size - HEADER_SIZE);
+                firstblockEnd = size + (char*)freeBlock->size;
+                if(List_searchBlock(myalloc.allocatedList,firstblockEnd+HEADER_SIZE)==NULL){
+                    int* freesize = block_to_remove->size-HEADER_SIZE;
+                    *freesize = allocatedBlock->size - freeBlock->size;
+                    // printf("freesize: %d\n", *freesize);
+                }
+
             }
             //if the freeblock is pointing to the very last chunk in the memory, merge with the rest of the memory together.
             if(allocatedBlock->size<block_to_remove->size ){
                 int* freesize = block_to_remove->size-HEADER_SIZE;
                 *freesize = (myalloc.memory+myalloc.size-block_to_remove->size);
+
                 // printf("freesize: %d\n", *freesize);
+
+
+                printf("freesize: %d\n", *freesize);
+
             }
         }
         //if there is no allocated block, then entire thing is free.
