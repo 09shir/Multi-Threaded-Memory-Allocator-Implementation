@@ -377,19 +377,23 @@ void deallocate_test_6() {
 
 int main(int argc, char* argv[]) {
 
-    // allocation_test_1();
-    // allocation_test_2();
-    // allocation_test_3();
-    // allocation_test_4();
-    // allocation_test_5();
-    // allocation_test_6();
-    // allocation_test_7();
-    // allocation_test_8();
+    allocation_test_1();
+    allocation_test_2();
+    allocation_test_3();
+    allocation_test_4();
+    allocation_test_5();
+    allocation_test_6();
+    allocation_test_7();
+    allocation_test_8();
 
-    // deallocate_test_1();
-    // deallocate_test_2();
+    deallocate_test_1();
+    deallocate_test_2();
     deallocate_test_3();
+<<<<<<< Updated upstream
     // deallocate_test_4();
+=======
+    deallocate_test_4();
+>>>>>>> Stashed changes
     deallocate_test_5();
     deallocate_test_6();
       
