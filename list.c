@@ -13,36 +13,15 @@ struct Block* List_createBlock(void *item) {
     return newBlock;
 }
 
-// insert in ascending order
-void List_insertBlock_inOrder(struct Block **headRef, struct Block *node) {
-    printf("C ");
-    struct Block *current = *headRef;
-
-    // if new block is smaller than head block, set new block as head
-    if (current == NULL || List_getInt(node->size - HEADER_SIZE) < List_getInt(current->size - HEADER_SIZE)) {
-        printf("A ");
-        node->next = current;
-        *headRef = node;
-        return;
-    }
-    printf("B ");
-    while (List_getInt(current->next->size - HEADER_SIZE) < List_getInt(node->size - HEADER_SIZE) && current->next != NULL) {
-        current = current->next;
-        node->next = current->next;
-        current->next = node;
-    }
-}
-
 void List_insertBlock(struct Block **headRef, struct Block *node) {
     struct Block *current = *headRef;
-    // printf("a\n");
 
     if (current == NULL) {
         *headRef = node;
         node->next = NULL;
         return;
     }
-    //William: node need to be added in the same sequence as allocated block to simplyfy deallocation
+    // node need to be added in the same sequence as allocated block to simplyfy deallocation
     else{
         struct Block **currentPointer = headRef;
         while(current){ // comparing the node->size with current-> size
@@ -113,113 +92,4 @@ size_t List_getSize_t(void *size) {
 
 int List_getInt(void *size) {
     return *(int *)(size);
-}
-// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-void List_insertHead (struct nodeStruct **headRef, struct nodeStruct *node){
-
-    node->next = *headRef;
-    *headRef = node;
-}
-
-
-void List_insertTail (struct nodeStruct **headRef, struct nodeStruct *node){
-
-    struct nodeStruct* curr = *headRef;
-
-    // in case head is empty
-    if (!curr){
-        *headRef = node;
-        return;
-    }
-
-    while (curr->next){
-        curr = curr->next;
-    }
-
-    curr->next = node;
-}
-
-
-int List_countNodes (struct nodeStruct *head){
-
-    int count = 0;
-
-    struct nodeStruct *curr = head;
-    while (curr){
-        count++;
-        curr = curr->next;
-    }
-    return count;
-}
-
-
-struct nodeStruct* List_findNode(struct nodeStruct *head, const char *item){
-
-    struct nodeStruct *ret = head;
-    while (ret){
-        if (!strcmp(ret->item,item)){
-            return ret;
-        }
-        ret = ret->next;
-    }
-    return NULL;
-}
-
-void List_deleteNode (struct nodeStruct **headRef, struct nodeStruct *node){
-
-    struct nodeStruct* curr = *headRef;
-
-    // if deleting head
-    if (curr == node){
-        *headRef = curr->next ? curr->next : NULL;
-    }
-    // other cases
-    else{
-        while(curr->next){
-            if (curr->next == node){
-                // if deleted node has more nodes connected
-                if (curr->next->next){
-                    struct nodeStruct *tmp = curr->next;
-                    curr->next = tmp->next;
-                }
-                else{
-                    curr->next = NULL;
-                }
-                return;
-            }
-            curr = curr->next;
-        }
-    }
-}
-
-
-void List_sort(struct nodeStruct **headRef) {
-
-    // sorting is not needed for linked list length of 0 or 1
-    if (!*headRef || !(*headRef)->next) {
-        return;  
-    }
-
-    struct nodeStruct *sorted = NULL;  // start with an empty sorted list
-    struct nodeStruct *current = *headRef;  // current node to insert into sorted list
-    struct nodeStruct *next;
-
-    // performs insertion sort
-    while (current != NULL) {
-        next = current->next;
-        struct nodeStruct **finder = &sorted;
-
-        // find the correct position to insert current node
-        while (*finder != NULL && strcmp((*finder)->item, current->item) < 0) {
-            finder = &(*finder)->next;
-        }
-
-        current->next = *finder;
-        *finder = current;
-
-        current = next;
-    }
-
-    *headRef = sorted;
 }

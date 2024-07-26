@@ -35,8 +35,6 @@ void allocation_test_1() {
 
     for (int i = 0; i < 9; i++) {
         p[i] = allocate(i+1);
-        // printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
-        // TEST(*(p[i]) == i+1);
         TEST(compare(p[i], i+1));
     }
 
@@ -93,21 +91,13 @@ void allocation_test_5() {
 
     for (int i = 0; i < 10; i++) {
         p[i] = allocate(4);
-        // *(p[i]) = 4;
-        // printf("p[%d] = %p ; *p[%d] = %d\n", i, p[i], i, *(p[i]));
     }
-
-    // printallblocks();
 
     deallocate(p[1]);
     deallocate(p[2]);
     deallocate(p[4]);
 
-    // printallblocks();
-
     p[10] = allocate(4);
-    // printf("p[10] = %p ; *p[10] = %d\n", p[10], *(p[10]));
-    // printallblocks();
     TEST(p[10] == p[4]);
 
     destroy_allocator();
@@ -140,11 +130,6 @@ void allocation_test_7() {
 
     int *p[11] = {NULL};
 
-    // for (int i = 0; i < 8; i++) {
-    //     printf("%d\n", 9 - ( i % 2 ? i-1 : i ) );
-    //     p[i] = allocate(9 - ( i % 2 ? i-1 : i ) );
-    //     // *(p[i]) = 4;
-    // }
     p[0] = allocate(9);
     p[1] = allocate(9);
     p[2] = allocate(8);
@@ -180,14 +165,10 @@ void allocation_test_8() {
     p[6] = allocate(6);
     p[7] = allocate(6);
 
-    // printallblocks();
-
     deallocate(p[0]);
     deallocate(p[2]);
     deallocate(p[4]);
     deallocate(p[6]);
-
-    // printallblocks();
 
     p[8] = allocate(6);
 
@@ -297,8 +278,6 @@ void deallocate_test_4() {
     deallocate(p[3]);
     deallocate(p[1]);
 
-    // printallblocks();
-
     int freeBlocksCount;
     int allocatedBlocksCount;
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
@@ -359,12 +338,11 @@ void deallocate_test_6() {
     int freeBlocksCount;
     int allocatedBlocksCount;
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
-    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
     TEST(freeBlocksCount == 1);
-    TEST(allocatedBlocksCount == 7);
-
     TEST(freeBlocks[0].size == 36);
+
+    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    TEST(allocatedBlocksCount == 7);
 
     destroy_allocator();
 }
@@ -387,14 +365,16 @@ void compact_allocation_test_1() {
     void* after[10];
 
     int compacted_size = compact_allocation(before, after);
+    TEST(compacted_size == 7);
 
     int freeBlocksCount;
     int allocatedBlocksCount;
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
-    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 56);
+
+    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
     TEST(allocatedBlocksCount == 6);
 
     destroy_allocator();
@@ -419,14 +399,16 @@ void compact_allocation_test_2() {
     void* after[10];
 
     int compacted_size = compact_allocation(before, after);
+    TEST(compacted_size == 6);
 
     int freeBlocksCount;
     int allocatedBlocksCount;
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
-    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 68);
+
+    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
     TEST(allocatedBlocksCount == 5);
 
     destroy_allocator();
@@ -451,14 +433,15 @@ void compact_allocation_test_3() {
     void* after[10];
 
     int compacted_size = compact_allocation(before, after);
+    TEST(compacted_size == 6);
 
     int freeBlocksCount;
     int allocatedBlocksCount;
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
-    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 68);
+    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
     TEST(allocatedBlocksCount == 5);
 
     destroy_allocator();

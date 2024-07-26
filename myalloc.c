@@ -4,7 +4,6 @@
 #include <string.h>
 #include "myalloc.h"
 #include "list.h"
-//#include "list.c"//don't delete for william debug
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -12,17 +11,7 @@
 // 1. a pointer to the allocated memory block
 // 2. a pointer to the next node in the list
 
-// struct Header {
-//     size_t size;
-// };
-
 #define HEADER_SIZE 8
-
-// struct Block {
-//     // struct Header header;
-//     void* size;
-//     struct Block* next;
-// };
 
 struct Myalloc {
     enum allocation_algorithm aalgorithm;
@@ -35,40 +24,17 @@ struct Myalloc {
 
 struct Myalloc myalloc;
 
-// void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
-//     assert(_size > 0);
-
-//     // size should align to the nearest next 64-byte boundary (round up)
-//     myalloc.size = (_size + 63) & ~63;
-//     myalloc.memory = malloc((size_t)myalloc.size);
-//     myalloc.aalgorithm = _aalgorithm;
-
-//     memset(myalloc.memory, 0, myalloc.size);
-
-//     struct Block *block = List_createBlock(myalloc.memory + HEADER_SIZE);
-//     // struct Block *block = List_createBlock(myalloc.memory);
-//     List_insertBlock(&myalloc.freeList, block);
-
-//     // copy size into the header
-//     size_t header_size = myalloc.size - HEADER_SIZE;
-//     memcpy(myalloc.memory, &header_size, HEADER_SIZE);
-//     myalloc.allocatedList = NULL;
-// }
-
 void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
     assert(_size > 0);
 
     // size should align to the nearest next 64-byte boundary (round up)
     myalloc.size = (_size + 63) & ~63;
-    // myalloc.size = _size;
     myalloc.memory = malloc(myalloc.size);
     myalloc.aalgorithm = _aalgorithm;
 
     memset(myalloc.memory, 0, myalloc.size);
 
     struct Block *block = List_createBlock(myalloc.memory + HEADER_SIZE);
-    // printf("%zu\n", *(size_t*) block->size);
-    // struct memoryBlock *block = List_createBlock(myalloc.memory);
     List_insertBlock(&myalloc.freeList, block);
 
     // copy size into the header
@@ -77,8 +43,6 @@ void initialize_allocator(int _size, enum allocation_algorithm _aalgorithm) {
     myalloc.allocatedList = NULL;
 
     pthread_mutex_init(&myalloc.lock, NULL);
-
-    // printf("Initialized header of myalloc.memory: %zu\n", *(size_t*)myalloc.memory);
 }
 
 void destroy_allocator() {
@@ -159,27 +123,19 @@ void* allocate(int _size) {
 
         // push new free block from below
         struct Block* newBlock = List_createBlock(best_fit->size + _size + HEADER_SIZE);
-        // printf(" \ninserting block memory: %d\n", List_getInt(newBlock->size - HEADER_SIZE));
         List_insertBlock(&myalloc.freeList, newBlock);
     }
 
     // change old header
-    // printf("1 ");
     *(size_t *) (best_fit->size - HEADER_SIZE) = _size;
 
     // remove it from freeList
-    // printf("2 ");
     List_deleteBlock(&myalloc.freeList, best_fit);
     // add it to allocatedList
-    // printf("3 ");
     List_insertBlock(&myalloc.allocatedList, best_fit);
-    // printf("4 \n");
 
     ptr = best_fit->size;
-
     // check if allocatedList has best_fit
-    // struct Block *b = myalloc.allocatedList;
-    // printf("Pushed Block with best_fit->size: %d to allocatedList\n", List_getInt(b->size - HEADER_SIZE));
 
     pthread_mutex_unlock(&myalloc.lock);
 
@@ -189,14 +145,12 @@ void* allocate(int _size) {
 void deallocate(void* _ptr) {
     assert(_ptr != NULL);
 
+    pthread_mutex_lock(&myalloc.lock);
+
     struct Block* block_to_remove = List_searchBlock(myalloc.allocatedList, _ptr);
 
     List_deleteBlock(&myalloc.allocatedList, block_to_remove);
     List_insertBlock(&myalloc.freeList, block_to_remove);
-    struct Block* block_to_start = (block_to_remove->size)-HEADER_SIZE;
-    // printf("\ndeallocated %p\n", block_to_start);
-
-    // printf("available_memory %d\n", available_memory());
 
         struct Block* freeBlock = myalloc.freeList;
         
@@ -212,7 +166,6 @@ void deallocate(void* _ptr) {
                 if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
                     int* freesize = block_to_remove->size-HEADER_SIZE;
                     *freesize = allocatedBlock->size - block_to_remove->size -HEADER_SIZE;//mm debug
-                    // printf("freesize: %d\n", *freesize);
                 }
                 allocatedBlock = allocatedBlock->next;
                 }
@@ -227,7 +180,6 @@ void deallocate(void* _ptr) {
                 if(List_searchBlock(myalloc.allocatedList,firstblockEnd+HEADER_SIZE)==NULL){
                     int* freesize = block_to_remove->size-HEADER_SIZE;
                     *freesize = allocatedBlock->size - freeBlock->size;
-                    // printf("freesize: %d\n", *freesize);
                 }
 
             }
@@ -236,22 +188,15 @@ void deallocate(void* _ptr) {
                 int* freesize = block_to_remove->size-HEADER_SIZE;
                 *freesize = (myalloc.memory+myalloc.size-block_to_remove->size);
 
-                // printf("freesize: %d\n", *freesize);
-
-
-                printf("freesize: %d\n", *freesize);
-
             }
         }
         //if there is no allocated block, then entire thing is free.
         else{
             int* freesize = freeBlock->size-HEADER_SIZE;
             *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
-            // printf("freesize: %d\n", *freesize);
         }
 
         //merge two consecutive free blocks
-        //printallblocks();//debug
         while (freeBlock->next) {
             void* firstblockEnd;
             int size = List_getInt(freeBlock->size - HEADER_SIZE);
@@ -275,16 +220,11 @@ void deallocate(void* _ptr) {
             }
             else freeBlock = freeBlock->next;
         }
-        //printallblocks();//debug
 
-
-    
-
+        pthread_mutex_unlock(&myalloc.lock);
     
 }
 
-// TODO
-// TODO
 int compact_allocation(void** _before, void** _after) {
     int compacted_size = 0;
     struct Block* allocatedBlock = myalloc.allocatedList;
@@ -311,12 +251,10 @@ int compact_allocation(void** _before, void** _after) {
     //update freelist
     while(myalloc.freeList->next){
         struct Block* deletePointer = myalloc.freeList->next;
-        //printf("%p",myalloc.freeList->next);
-        //printf("%p",deletePointer);
 
         List_deleteBlock(&myalloc.freeList, myalloc.freeList->next);
         free(deletePointer);
-        }
+    }
     myalloc.freeList->size = chunkAddress+HEADER_SIZE;
     chunksize = myalloc.memory + myalloc.size - chunkAddress;
     int* freesize = myalloc.freeList->size - HEADER_SIZE;
