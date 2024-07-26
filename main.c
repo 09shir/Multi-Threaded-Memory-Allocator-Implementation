@@ -390,8 +390,8 @@ int main(int argc, char* argv[]) {
     // deallocate_test_2();
     deallocate_test_3();
     // deallocate_test_4();
-    deallocate_test_5()
-    deallocate_test_6()
+    deallocate_test_5();
+    deallocate_test_6();
       
     print_test_result();
     return 0;
