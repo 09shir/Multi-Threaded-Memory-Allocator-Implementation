@@ -349,6 +349,32 @@ void deallocate_test_5() {
     destroy_allocator();
 }
 
+void deallocate_test_6() {
+    initialize_allocator(100, FIRST_FIT);
+
+    int *p[11] = {NULL};
+
+    for (int i = 0; i < 10; i++) {
+        p[i] = allocate(4);
+    }
+
+    deallocate(p[3]);
+    deallocate(p[2]);
+    deallocate(p[1]);
+
+    int freeBlocksCount;
+    int allocatedBlocksCount;
+    struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
+    TEST(freeBlocksCount == 1);
+    TEST(allocatedBlocksCount == 7);
+
+    TEST(freeBlocks[0].size == 36);
+
+    destroy_allocator();
+}
+
 int main(int argc, char* argv[]) {
 
     // allocation_test_1();
@@ -365,6 +391,7 @@ int main(int argc, char* argv[]) {
     deallocate_test_3();
     // deallocate_test_4();
     deallocate_test_5()
+    deallocate_test_6()
       
     print_test_result();
     return 0;
