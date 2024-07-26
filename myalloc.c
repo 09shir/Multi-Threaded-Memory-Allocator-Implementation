@@ -4,7 +4,7 @@
 #include <string.h>
 #include "myalloc.h"
 #include "list.h"
-//#include "list.c"//don't delete for william debug
+#include "list.c"//don't delete for william debug
 #include <stdbool.h>
 #include <pthread.h>
 
@@ -226,9 +226,9 @@ void deallocate(void* _ptr) {
                 printf("freesize: %d\n", *freesize);
             }
             //if the freeblock is pointing to the very last chunk in the memory, merge with the rest of the memory together.
-            if(allocatedBlock->size<freeBlock->size){
-                int* freesize = freeBlock->size-HEADER_SIZE;
-                *freesize = (myalloc.memory+myalloc.size-freeBlock->size);
+            if(allocatedBlock->size<block_to_remove->size ){
+                int* freesize = block_to_remove->size-HEADER_SIZE;
+                *freesize = (myalloc.memory+myalloc.size-block_to_remove->size);
                 printf("freesize: %d\n", *freesize);
             }
         }
