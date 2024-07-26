@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "myalloc.h"
 #include "stdbool.h"
+#include <stdlib.h>
 //#include "myalloc.c"//don't delete for william debug
 
 // int TOTAL_MEMORY_SIZE = 100;
@@ -196,6 +197,8 @@ void deallocate_test_1() {
     TEST(blocks[0].size == 36);
     TEST(count == 1);
 
+    free(blocks);
+
     destroy_allocator();
 }
 
@@ -220,11 +223,15 @@ void deallocate_test_2() {
     deallocate(p[9]);
 
     int allocatedBlocksCount;
-    struct BlockDetails* blocks = getFreeBlocks(&allocatedBlocksCount);
-    TEST(blocks[0].size == 128);
+    struct BlockDetails* freeBlocks = getFreeBlocks(&allocatedBlocksCount);
+    TEST(freeBlocks[0].size == 128);
 
-    blocks = getAllocatedBlocks(&allocatedBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    TEST(allocatedBlocks != NULL);
     TEST(allocatedBlocksCount == 0);
+
+    free(freeBlocks);
+    free(allocatedBlocks);
 
     destroy_allocator();
 }
@@ -260,6 +267,9 @@ void deallocate_test_3() {
     TEST(freeBlocks[4].size == 20);
     TEST(allocatedBlocks[4].size == 12);
 
+    free(freeBlocks);
+    free(allocatedBlocks);
+
     destroy_allocator();
 }
 
@@ -294,6 +304,9 @@ void deallocate_test_4() {
     TEST(freeBlocks[4].size == 20);
     TEST(allocatedBlocks[4].size == 12);
 
+    free(freeBlocks);
+    free(allocatedBlocks);
+
     destroy_allocator();
 }
 
@@ -319,6 +332,9 @@ void deallocate_test_5() {
     TEST(freeBlocks[0].size == 20);
     TEST(allocatedBlocks[1].size == 12);
 
+    free(freeBlocks);
+    free(allocatedBlocks);
+
     destroy_allocator();
 }
 
@@ -341,9 +357,12 @@ void deallocate_test_6() {
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 36);
 
-    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    TEST(allocatedBlocks[0].size == 12);
     TEST(allocatedBlocksCount == 7);
 
+    free(freeBlocks);
+    free(allocatedBlocks);
     destroy_allocator();
 }
 
@@ -373,9 +392,12 @@ void compact_allocation_test_1() {
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 56);
 
-    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
     TEST(allocatedBlocksCount == 6);
+    TEST(allocatedBlocks[0].size == 12);
+
+    free(freeBlocks);
+    free(allocatedBlocks);
 
     destroy_allocator();
 }
@@ -407,9 +429,12 @@ void compact_allocation_test_2() {
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 68);
 
-    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    TEST(allocatedBlocks[0].size == 12);
     TEST(allocatedBlocksCount == 5);
+
+    free(freeBlocks);
+    free(allocatedBlocks);
 
     destroy_allocator();
 }
@@ -440,9 +465,12 @@ void compact_allocation_test_3() {
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
     TEST(freeBlocksCount == 1);
     TEST(freeBlocks[0].size == 68);
-    freeBlocks = getAllocatedBlocks(&allocatedBlocksCount);
-
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    TEST(allocatedBlocks[0].size == 12);
     TEST(allocatedBlocksCount == 5);
+
+    free(freeBlocks);
+    free(allocatedBlocks);
 
     destroy_allocator();
 }

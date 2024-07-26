@@ -425,6 +425,8 @@ struct BlockDetails* getFreeBlocks(int* count) {
         index++;
     }
 
+    free(current);
+
     return blocks;
 }
 
@@ -452,6 +454,8 @@ struct BlockDetails* getAllocatedBlocks(int* count) {
         current = current->next;
         index++;
     }
+
+    free(current);
 
     return blocks;
 }
