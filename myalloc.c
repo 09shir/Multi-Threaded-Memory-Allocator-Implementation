@@ -4,7 +4,7 @@
 #include <string.h>
 #include "myalloc.h"
 #include "list.h"
-#include "list.c"//don't delete for william debug
+//#include "list.c"//don't delete for william debug
 #include <stdbool.h>
 #include <pthread.h>
 
