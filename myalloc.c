@@ -401,6 +401,7 @@ void print_statistics() {
     printf("Smallest free chunk size = %d\n", smallest_free_chunk_size);
 }
 
+// for debug
 void printallblocks(){
     printf("\nAllocated List\n");
     struct Block* block = myalloc.allocatedList;
@@ -440,6 +441,60 @@ void printallblocks(){
         printf("\n");
         block = block->next;
     }
-    
 }
 
+struct BlockDetails* getFreeBlocks(int* count) {
+    struct Block* current = myalloc.freeList;
+    *count = 0;
+
+    // First pass: Count the number of free blocks
+    while (current) {
+        (*count)++;
+        current = current->next;
+    }
+
+    // Allocate an array to hold the block details
+    struct BlockDetails* blocks = (struct BlockDetails*)malloc((*count) * sizeof(struct BlockDetails));
+
+    current = myalloc.freeList;
+    int index = 0;
+
+    // Second pass: Store the block details
+    while (current) {
+        blocks[index].start = current->size - HEADER_SIZE;
+        blocks[index].end = current->size + List_getInt(current->size - HEADER_SIZE);
+        blocks[index].size = List_getInt(current->size - HEADER_SIZE) + HEADER_SIZE;
+        current = current->next;
+        index++;
+    }
+
+    return blocks;
+}
+
+struct BlockDetails* getAllocatedBlocks(int* count) {
+    struct Block* current = myalloc.allocatedList;
+    *count = 0;
+
+    // First pass: Count the number of free blocks
+    while (current) {
+        (*count)++;
+        current = current->next;
+    }
+
+    // Allocate an array to hold the block details
+    struct BlockDetails* blocks = (struct BlockDetails*)malloc((*count) * sizeof(struct BlockDetails));
+
+    current = myalloc.allocatedList;
+    int index = 0;
+
+    // Second pass: Store the block details
+    while (current) {
+        blocks[index].start = current->size - HEADER_SIZE;
+        blocks[index].end = current->size + List_getInt(current->size - HEADER_SIZE);
+        blocks[index].size = List_getInt(current->size - HEADER_SIZE) + HEADER_SIZE;
+        current = current->next;
+        index++;
+    }
+
+    return blocks;
+}

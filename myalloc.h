@@ -13,5 +13,14 @@ void print_statistics();
 int compact_allocation(void** _before, void** _after);
 void compact_allocation_helper(void* origin,int originsize, void*destination);
 void destroy_allocator();
+
+// for debug
 void printallblocks();
+struct BlockDetails {
+    void* start;
+    void* end;
+    size_t size;
+};
+struct BlockDetails* getFreeBlocks(int* count);
+struct BlockDetails* getAllocatedBlocks(int* count);
 #endif
