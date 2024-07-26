@@ -1,10 +1,10 @@
-#Team contribution form:
+# Team contribution form:
 
-###Allen Chen:
+### Allen Chen:
 Wrote statistics and multithreading
 
-###Roy Shi:
+### Roy Shi:
 Wrote initialization, allocation, and metadata management
 
-###William Chen:
+### William Chen:
 Wrote deallocation and compaction
