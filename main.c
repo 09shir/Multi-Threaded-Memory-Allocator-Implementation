@@ -258,10 +258,10 @@ void deallocate_test_3() {
         p[i] = allocate(4);
     }
 
-    // deallocate(p[1]);
-    // deallocate(p[3]);
-    // deallocate(p[5]);
-    // deallocate(p[7]);
+    deallocate(p[1]);
+    deallocate(p[3]);
+    deallocate(p[5]);
+    deallocate(p[7]);
     deallocate(p[9]);
 
     printallblocks();
