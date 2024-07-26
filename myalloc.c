@@ -202,7 +202,7 @@ void deallocate(void* _ptr) {
         
         //solve framentation that are toot small to be included in the free list
         if (myalloc.allocatedList!=NULL){
-            
+            // printallblocks();
             struct Block* allocatedBlock = myalloc.allocatedList;
             int indicator = 0;
             //check if there is free space immediately on the right hand side of the free block.
@@ -215,15 +215,21 @@ void deallocate(void* _ptr) {
                     // printf("freesize: %d\n", *freesize);
                 }
                 allocatedBlock = allocatedBlock->next;
-                }
-            // same as above loop, just one more loop without allocatedBlock = allocatedBlock->next
-            if(allocatedBlock->size>freeBlock->size){//loop until allocated block is on the right hand side of the free block
-                indicator++;}
-            if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
-                int* freesize = freeBlock->size-HEADER_SIZE;
-                *freesize = allocatedBlock->size - freeBlock->size;
-                // printf("freesize: %d\n", *freesize);
             }
+            // same as above loop, just one more loop without allocatedBlock = allocatedBlock->next
+            // if(allocatedBlock->size>freeBlock->size){//loop until allocated block is on the right hand side of the free block
+            //     printf("\n%p", allocatedBlock->size);
+            //     printf("\n%p", freeBlock->size);
+            //     indicator++;
+
+            // }
+            // if(indicator == 1){ // indicator == 1 means we found the next allocated space ofter free space. 
+            //     printallblocks();
+            //     int* freesize = freeBlock->size-HEADER_SIZE;
+            //     *freesize = allocatedBlock->size - freeBlock->size - HEADER_SIZE;
+            //     // printf("freesize: %d\n", *freesize);
+            //     printallblocks();
+            // }
             //if the freeblock is pointing to the very last chunk in the memory, merge with the rest of the memory together.
             if(allocatedBlock->size<freeBlock->size){
                 int* freesize = freeBlock->size-HEADER_SIZE;
@@ -241,15 +247,25 @@ void deallocate(void* _ptr) {
         //merge two consecutive free blocks
         //printallblocks();//debug
         while (freeBlock->next) {
+
             void* firstblockEnd;
             int size = List_getInt(freeBlock->size - HEADER_SIZE);
             firstblockEnd = size + (char*)freeBlock->size;
             void* secondblockStart =  freeBlock->next->size - HEADER_SIZE;
+
+            int secondblockSize = List_getInt(freeBlock->next->size - HEADER_SIZE) + HEADER_SIZE;
+            void* secondblockEnd = secondblockSize + (char*)freeBlock->next->size - HEADER_SIZE;
+            
             if (firstblockEnd == secondblockStart){
                 int* sizeptr = freeBlock->size-HEADER_SIZE ;
                 size = *sizeptr;
                 size = size + List_getInt(secondblockStart) + HEADER_SIZE;
                 *sizeptr = size;
+                struct Block* deletePointer = freeBlock->next;
+                List_deleteBlock(&myalloc.freeList, freeBlock->next);
+                free(deletePointer);
+            }
+            else if (firstblockEnd == secondblockEnd) {
                 struct Block* deletePointer = freeBlock->next;
                 List_deleteBlock(&myalloc.freeList, freeBlock->next);
                 free(deletePointer);
@@ -406,38 +422,38 @@ void printallblocks(){
     printf("\nAllocated List\n");
     struct Block* block = myalloc.allocatedList;
     while(block){
-        char start_str[20];
-        sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
-        int start_int = (int) strtol(start_str, NULL, 16);
+        // char start_str[20];
+        // sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
+        // int start_int = (int) strtol(start_str, NULL, 16);
 
-        char end_str[20];
-        sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
-        int end_int = (int) strtol(end_str, NULL, 16);
+        // char end_str[20];
+        // sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
+        // int end_int = (int) strtol(end_str, NULL, 16);
 
-        printf("> Block start at %d", start_int);
+        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
-        printf("Block end at %d", end_int);
+        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
         printf("\n");
         block = block->next;
     }
     printf("Free List\n");
     block = myalloc.freeList;
     while(block){
-        char start_str[20];
-        sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
-        int start_int = (int) strtol(start_str, NULL, 16);
+        // char start_str[20];
+        // sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
+        // int start_int = (int) strtol(start_str, NULL, 16);
 
-        char end_str[20];
-        sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
-        int end_int = (int) strtol(end_str, NULL, 16);
+        // char end_str[20];
+        // sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
+        // int end_int = (int) strtol(end_str, NULL, 16);
 
-        printf("> Block start at %d", start_int);
+        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
         printf("\t");
         printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
         printf("\t");
-        printf("Block end at %d", end_int);
+        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
         printf("\n");
         block = block->next;
     }

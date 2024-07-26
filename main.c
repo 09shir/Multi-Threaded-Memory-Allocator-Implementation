@@ -258,63 +258,82 @@ void deallocate_test_3() {
         p[i] = allocate(4);
     }
 
-    // printallblocks();
+    // deallocate(p[1]);
+    // deallocate(p[3]);
+    // deallocate(p[5]);
     // deallocate(p[7]);
-    // printallblocks();
-    deallocate(p[7]);
-    deallocate(p[6]);
-    deallocate(p[5]);
-    deallocate(p[4]);
-    deallocate(p[3]);
-    deallocate(p[2]);
-    deallocate(p[1]);
-    deallocate(p[0]);
+    deallocate(p[9]);
+
     printallblocks();
-    // deallocate(p[9]);
-    // printallblocks();
 
-    // int freeBlocksCount;
-    // int allocatedBlocksCount;
-    // struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
-    // struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+    int freeBlocksCount;
+    int allocatedBlocksCount;
+    struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
 
-    // TEST(freeBlocksCount == 5);
-    // TEST(allocatedBlocksCount == 5);
+    TEST(freeBlocksCount == 5);
+    TEST(allocatedBlocksCount == 5);
 
-    // for (int i = 0; i < 5; i++) {
-    //     TEST(freeBlocks[i].size == 12);
-    //     TEST(allocatedBlocks[i].size == 12);
-    // }
+    for (int i = 0; i < 4; i++) {
+        TEST(freeBlocks[i].size == 12);
+        TEST(allocatedBlocks[i].size == 12);
+    }
 
-    // printf("\nfree blocks: \n");
+    TEST(freeBlocks[4].size == 20);
+    TEST(allocatedBlocks[4].size == 12);
 
-    // for (int i = 0; i < freeBlocksCount; i++) {
-    //     printf("Block %d: Start: %p, End: %p, Size: %zu\n", i, freeBlocks[i].start, freeBlocks[i].end, freeBlocks[i].size);
-    // }
+    destroy_allocator();
+}
 
-    // printf("\nallocated blocks: \n");
+void deallocate_test_4() {
+    initialize_allocator(100, FIRST_FIT);
 
-    // for (int i = 0; i < allocatedBlocksCount; i++) {
-    //     printf("Block %d: Start: %p, End: %p, Size: %zu\n", i, allocatedBlocks[i].start, allocatedBlocks[i].end, allocatedBlocks[i].size);
-    // }
+    int *p[11] = {NULL};
+
+    for (int i = 0; i < 10; i++) {
+        p[i] = allocate(4);
+    }
+
+    deallocate(p[9]);
+    deallocate(p[7]);
+    deallocate(p[5]);
+    deallocate(p[3]);
+    deallocate(p[1]);
+
+    int freeBlocksCount;
+    int allocatedBlocksCount;
+    struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
+    TEST(freeBlocksCount == 5);
+    TEST(allocatedBlocksCount == 5);
+
+    for (int i = 0; i < 4; i++) {
+        TEST(freeBlocks[i].size == 12);
+        TEST(allocatedBlocks[i].size == 12);
+    }
+
+    TEST(freeBlocks[4].size == 20);
+    TEST(allocatedBlocks[4].size == 12);
 
     destroy_allocator();
 }
 
 int main(int argc, char* argv[]) {
 
-    allocation_test_1();
-    allocation_test_2();
-    allocation_test_3();
-    allocation_test_4();
-    allocation_test_5();
-    allocation_test_6();
-    allocation_test_7();
-    allocation_test_8();
+    // allocation_test_1();
+    // allocation_test_2();
+    // allocation_test_3();
+    // allocation_test_4();
+    // allocation_test_5();
+    // allocation_test_6();
+    // allocation_test_7();
+    // allocation_test_8();
 
-    deallocate_test_1();
-    deallocate_test_2();
+    // deallocate_test_1();
+    // deallocate_test_2();
     deallocate_test_3();
+    // deallocate_test_4();
 
     print_test_result();
     return 0;
