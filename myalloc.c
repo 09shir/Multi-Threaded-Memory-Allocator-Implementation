@@ -226,6 +226,7 @@ void deallocate(void* _ptr) {
 }
 
 int compact_allocation(void** _before, void** _after) {
+    pthread_mutex_lock(&myalloc.lock);
     int compacted_size = 0;
     struct Block* allocatedBlock = myalloc.allocatedList;
     int chunksize;
@@ -260,6 +261,7 @@ int compact_allocation(void** _before, void** _after) {
     int* freesize = myalloc.freeList->size - HEADER_SIZE;
     *freesize = chunksize-HEADER_SIZE;
     compacted_size++;
+    pthread_mutex_unlock(&myalloc.lock);
     return compacted_size;
 }
 
@@ -275,6 +277,7 @@ void compact_allocation_helper(void* origin,int originsize, void*destination){
 }
 
 int available_memory() {
+    pthread_mutex_lock(&myalloc.lock);
     int available_memory_size = myalloc.size;
     // Calculate available memory size
 
@@ -283,11 +286,13 @@ int available_memory() {
         available_memory_size -= List_getInt(allocatedBlock->size - HEADER_SIZE) + HEADER_SIZE;
         allocatedBlock = allocatedBlock->next;
     }
+    pthread_mutex_unlock(&myalloc.lock);
     return available_memory_size;
 }
 
 // TODO
 void print_statistics() {
+    pthread_mutex_lock(&myalloc.lock);
     int allocated_size = 0;
     int allocated_chunks = 0;
     int free_size = 0;
@@ -356,48 +361,8 @@ void print_statistics() {
     printf("Free chunks = %d\n", free_chunks);
     printf("Largest free chunk size = %d\n", largest_free_chunk_size);
     printf("Smallest free chunk size = %d\n", smallest_free_chunk_size);
-}
 
-// for debug
-void printallblocks(){
-    printf("\nAllocated List\n");
-    struct Block* block = myalloc.allocatedList;
-    while(block){
-        // char start_str[20];
-        // sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
-        // int start_int = (int) strtol(start_str, NULL, 16);
-
-        // char end_str[20];
-        // sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
-        // int end_int = (int) strtol(end_str, NULL, 16);
-
-        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
-        printf("\t");
-        printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
-        printf("\t");
-        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
-        printf("\n");
-        block = block->next;
-    }
-    printf("Free List\n");
-    block = myalloc.freeList;
-    while(block){
-        // char start_str[20];
-        // sprintf(start_str, "%p", (void*)(block->size - HEADER_SIZE));
-        // int start_int = (int) strtol(start_str, NULL, 16);
-
-        // char end_str[20];
-        // sprintf(end_str, "%p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
-        // int end_int = (int) strtol(end_str, NULL, 16);
-
-        printf("> Block start at %p", (void*)(block->size - HEADER_SIZE));
-        printf("\t");
-        printf("Block Size is %03d", (int)(List_getInt(block->size - HEADER_SIZE)+HEADER_SIZE));
-        printf("\t");
-        printf("Block end at %p", (void*)(block->size + List_getInt(block->size - HEADER_SIZE)));
-        printf("\n");
-        block = block->next;
-    }
+    pthread_mutex_unlock(&myalloc.lock);
 }
 
 struct BlockDetails* getFreeBlocks(int* count) {
