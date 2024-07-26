@@ -180,14 +180,14 @@ void allocation_test_8() {
     p[6] = allocate(6);
     p[7] = allocate(6);
 
-    printallblocks();
+    // printallblocks();
 
     deallocate(p[0]);
     deallocate(p[2]);
     deallocate(p[4]);
     deallocate(p[6]);
 
-    printallblocks();
+    // printallblocks();
 
     p[8] = allocate(6);
 
@@ -263,8 +263,6 @@ void deallocate_test_3() {
     deallocate(p[7]);
     deallocate(p[9]);
 
-    printallblocks();
-
     int freeBlocksCount;
     int allocatedBlocksCount;
     struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
@@ -298,6 +296,8 @@ void deallocate_test_4() {
     deallocate(p[5]);
     deallocate(p[3]);
     deallocate(p[1]);
+
+    // printallblocks();
 
     int freeBlocksCount;
     int allocatedBlocksCount;
@@ -337,11 +337,6 @@ void deallocate_test_5() {
     TEST(freeBlocksCount == 1);
     TEST(allocatedBlocksCount == 9);
 
-    // for (int i = 0; i < 4; i++) {
-    //     TEST(freeBlocks[i].size == 12);
-    //     TEST(allocatedBlocks[i].size == 12);
-    // }
-
     TEST(freeBlocks[0].size == 20);
     TEST(allocatedBlocks[1].size == 12);
 
@@ -374,23 +369,121 @@ void deallocate_test_6() {
     destroy_allocator();
 }
 
+void compact_allocation_test_1() {
+    initialize_allocator(100, FIRST_FIT);
+
+    int *p[11] = {NULL};
+
+    for (int i = 0; i < 10; i++) {
+        p[i] = allocate(4);
+    }
+
+    deallocate(p[1]);
+    deallocate(p[2]);
+    deallocate(p[4]);
+    deallocate(p[5]);
+
+    void* before[10];
+    void* after[10];
+
+    int compacted_size = compact_allocation(before, after);
+
+    int freeBlocksCount;
+    int allocatedBlocksCount;
+    struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
+    TEST(freeBlocksCount == 1);
+    TEST(freeBlocks[0].size == 56);
+    TEST(allocatedBlocksCount == 6);
+
+    destroy_allocator();
+}
+
+void compact_allocation_test_2() {
+    initialize_allocator(100, FIRST_FIT);
+
+    int *p[11] = {NULL};
+
+    for (int i = 0; i < 10; i++) {
+        p[i] = allocate(4);
+    }
+
+    deallocate(p[0]);
+    deallocate(p[2]);
+    deallocate(p[4]);
+    deallocate(p[6]);
+    deallocate(p[8]);
+
+    void* before[10];
+    void* after[10];
+
+    int compacted_size = compact_allocation(before, after);
+
+    int freeBlocksCount;
+    int allocatedBlocksCount;
+    struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
+    TEST(freeBlocksCount == 1);
+    TEST(freeBlocks[0].size == 68);
+    TEST(allocatedBlocksCount == 5);
+
+    destroy_allocator();
+}
+
+void compact_allocation_test_3() {
+    initialize_allocator(100, FIRST_FIT);
+
+    int *p[11] = {NULL};
+
+    for (int i = 0; i < 10; i++) {
+        p[i] = allocate(4);
+    }
+
+    deallocate(p[1]);
+    deallocate(p[3]);
+    deallocate(p[5]);
+    deallocate(p[7]);
+    deallocate(p[9]);
+
+    void* before[10];
+    void* after[10];
+
+    int compacted_size = compact_allocation(before, after);
+
+    int freeBlocksCount;
+    int allocatedBlocksCount;
+    struct BlockDetails* freeBlocks = getFreeBlocks(&freeBlocksCount);
+    struct BlockDetails* allocatedBlocks = getAllocatedBlocks(&allocatedBlocksCount);
+
+    TEST(freeBlocksCount == 1);
+    TEST(freeBlocks[0].size == 68);
+    TEST(allocatedBlocksCount == 5);
+
+    destroy_allocator();
+}
+
 int main(int argc, char* argv[]) {
 
-    // allocation_test_1();
-    // allocation_test_2();
-    // allocation_test_3();
-    // allocation_test_4();
-    // allocation_test_5();
-    // allocation_test_6();
-    // allocation_test_7();
+    allocation_test_1();
+    allocation_test_2();
+    allocation_test_3();
+    allocation_test_4();
+    allocation_test_5();
+    allocation_test_6();
+    allocation_test_7();
     allocation_test_8();
 
-    // deallocate_test_1();
-    // deallocate_test_2();
-    // deallocate_test_3();
-    // deallocate_test_4();
-    // deallocate_test_5();
-    // deallocate_test_6();
+    deallocate_test_1();
+    deallocate_test_2();
+    deallocate_test_3();
+    deallocate_test_4();
+    deallocate_test_5();
+    deallocate_test_6();
+    compact_allocation_test_1();
+    compact_allocation_test_2();
+    compact_allocation_test_3();
       
     print_test_result();
     return 0;
